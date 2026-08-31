@@ -6,24 +6,26 @@ An autonomous compliance decision engine that uses RAG (Retrieval-Augmented Gene
 
 | Layer | Tech |
 |-------|------|
-| Frontend | Next.js + Tailwind + Framer Motion + **Redux Toolkit** |
-| Node API | Express (gateway, JWT, chat history, report lifecycle) |
-| Python RAG | FastAPI + sentence-transformers + **Gemini 2.5 Flash** |
+| Frontend | Next.js 15 + Tailwind + Framer Motion + **Redux Toolkit** (Vercel) |
+| Node API | Express (gateway, JWT, chat history, report lifecycle) — **Docker on EC2** |
+| Python RAG | FastAPI + **fastembed** (`BAAI/bge-large-en-v1.5`) + **Gemini 2.5 Flash** — **Docker on EC2** |
 | Database | **MongoDB Atlas** (`compliance_engine`) |
 | Vector Store | MongoDB Atlas Vector Search |
 | XAI | SHAP + LIME over a local surrogate of rules/controls/retrieval |
 | Trust analytics | Per-chat `trust_stats` + Analyze dashboard charts |
 | Storage | IPFS (Pinata) |
 | Blockchain | Solidity / Hardhat — **Base Sepolia** |
+| Production | **AWS EC2** (`finace.sambhav-mani-tripathi.tech`) + Nginx + Docker Hub |
 
 ## Quick Start
 
-See [setup.md](./setup.md) for full instructions.
+- **Local dev:** [START.md](./START.md) or [setup.md](./setup.md)
+- **Production (EC2 + Vercel):** [setup.md § Production](./setup.md#7-production-ec2--docker--vercel)
 
 ```bash
 # 1. Python RAG service
 cd python-rag && python -m venv .venv && .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r requirements-local.txt   # full local stack
 uvicorn api.app:app --host 127.0.0.1 --port 8000 --reload
 
 # 2. Node API gateway
@@ -32,6 +34,20 @@ cd backend && npm install && npm run dev
 # 3. Frontend
 cd Frontend && npm install && npm run dev
 ```
+
+## Production architecture
+
+```
+Vercel (Next.js)
+    ↓  https://finace.sambhav-mani-tripathi.tech/api/v1
+Nginx (EC2) → Node API :5000  (sambhav30/finace-node)
+    ↓  http://finace-python-rag:8000  (Docker internal network)
+Python RAG :8000  (sambhav30/finace-rag)
+    ↓
+MongoDB Atlas + Gemini API
+```
+
+Docker images: `sambhav30/finace-node:latest`, `sambhav30/finace-rag:latest`
 
 ## Analyze tab (model trust)
 
@@ -70,9 +86,11 @@ Files are kept under ~300 lines each for maintainability.
 
 Core pipeline, XAI, Atlas, Base Sepolia, chat history, Redux auth, Analyze trust dashboard, signed PDF reports, and on-chain hash anchoring are in place.
 
+- **Complete guide (theory + roadmap + what's left):** [FINACE_MASTER_GUIDE.md](./FINACE_MASTER_GUIDE.md)
 - Full session reference: [SESSION_HISTORY.md](./SESSION_HISTORY.md)
 - Roadmap checklist: [rag_implementation_roadmap.md](./rag_implementation_roadmap.md)
-- Setup: [setup.md](./setup.md)
+- Local setup: [setup.md](./setup.md)
+- Quick local start: [START.md](./START.md)
 
 ## Deployed Contract
 

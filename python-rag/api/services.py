@@ -49,7 +49,7 @@ class RAGApiService:
     def pipeline(self) -> RAGPipeline:
         if self._pipeline is None:
             logger.info("Initializing RAG pipeline for FastAPI wrapper")
-            self._pipeline = RAGPipeline()
+            self._pipeline = RAGPipeline(retriever=self.retriever)
         return self._pipeline
 
     @property

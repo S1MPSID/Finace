@@ -39,3 +39,6 @@ RBI DOCS/
 
 # Logs
 *.log
+
+# Server deploy scripts (kept local only)
+deploy/

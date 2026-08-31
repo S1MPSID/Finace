@@ -92,8 +92,8 @@ def _merge_compliance_score(
 
 
 class RAGPipeline:
-    def __init__(self):
-        self.retriever = LocalRetriever()
+    def __init__(self, retriever: LocalRetriever | None = None):
+        self.retriever = retriever or LocalRetriever()
         self.llm = LLMClient()
 
     def analyze(

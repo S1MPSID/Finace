@@ -57,6 +57,14 @@ const reportSchema = new mongoose.Schema(
       enum: ["none", "pdf_ready", "signed", "anchored"],
       default: "none",
     },
+    evaluation_logs: {
+      type: [Object],
+      default: [],
+    },
+    evaluator_references: {
+      type: [Object],
+      default: [],
+    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

@@ -7,6 +7,7 @@ import {
   downloadReportPdf,
   generateReport,
   prepareProof,
+  regenerateReportPdf,
   signReport,
   updateReport,
 } from "../controllers/reportController.js";
@@ -25,6 +26,7 @@ router.post("/generate", requireEitherAuth, asyncHandler(generateReport));
 router.post("/update", requireEitherAuth, asyncHandler(updateReport));
 router.post("/:id/sign", requireEitherAuth, asyncHandler(signReport));
 router.get("/:id/pdf", requireEitherAuth, asyncHandler(downloadReportPdf));
+router.post("/:id/pdf/regenerate", requireEitherAuth, asyncHandler(regenerateReportPdf));
 router.post("/proof", requireEitherAuth, asyncHandler(prepareProof));
 router.post("/anchor", requireEitherAuth, asyncHandler(anchorProof));
 

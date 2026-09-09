@@ -38,6 +38,22 @@ export const hydrateAuth = createAsyncThunk("auth/hydrate", async (_, { rejectWi
   // Optimistic JWT decode so UI can show a name immediately
   const jwtUser = userFromToken(token);
 
+  // Evaluator sessions: prefer JWT + evaluator /me (company /auth/me may 401 on older backends)
+  if (jwtUser?.role === "evaluator") {
+    try {
+      const data: any = await api.get("/evaluator/auth/me");
+      if (data?.ok && data.user) {
+        const user = data.user as AppUser;
+        setAuthCookies(token, user);
+        return { token, user };
+      }
+    } catch {
+      /* fall through to JWT */
+    }
+    setAuthCookies(token, jwtUser);
+    return { token, user: jwtUser };
+  }
+
   try {
     const data: any = await api.get("/auth/me");
     if (data?.ok && data.user) {

@@ -48,10 +48,18 @@ def _warmup_models() -> None:
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     logger.info("Starting python-rag FastAPI wrapper")
+    warmup_task = None
     if os.getenv("WARM_EMBEDDER", "1") == "1":
         loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, _warmup_models)
+        # Do not block startup — PDF/report routes work without the embedder.
+        warmup_task = loop.run_in_executor(None, _warmup_models)
+        logger.info("Embedder warmup running in background (first run downloads ~1.3GB model)")
     yield
+    if warmup_task is not None:
+        try:
+            await warmup_task
+        except Exception:
+            logger.exception("Embedder warmup failed")
     logger.info("Stopping python-rag FastAPI wrapper")
 
 

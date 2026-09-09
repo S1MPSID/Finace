@@ -17,6 +17,9 @@ import { ReportHealthHeader } from "@/components/reports/ReportHealthHeader";
 import { ReportDetails } from "@/components/reports/ReportDetails";
 
 import { ProofGenerationModal } from "@/components/reports/ProofGenerationModal";
+import { CompliancePdfActions } from "@/components/reports/CompliancePdfActions";
+import { EvaluatorAmendmentPanel } from "@/components/reports/EvaluatorAmendmentPanel";
+import { EvaluationAuditTimeline } from "@/components/reports/EvaluationAuditTimeline";
 
 export default function ReportReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -34,7 +37,6 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
   const [modalTxHash, setModalTxHash] = useState<string | null>(null);
   const [modalIpfsCid, setModalIpfsCid] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
-
   const fetchReport = async () => {
     try {
       const data: any = await reportsApi.getById(id);
@@ -155,23 +157,6 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
   );
 
   const isFinalized = report.ipfs_cid && report.tx_hash;
-  const canDownloadSigned =
-    report.is_digitally_signed || report.status === "verified" || isFinalized;
-
-  const handleDownloadSignedPdf = async () => {
-    try {
-      const blob = await reportsApi.downloadPdf(id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${id}.signed.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      alert("Signed PDF not available yet. Verify the report first.");
-    }
-  };
 
   return (
     <div className="space-y-6 max-w-7xl pb-20">
@@ -189,16 +174,8 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
             </h2>
           </div>
         </div>
-        <div className="flex gap-2 flex-wrap">
-          {canDownloadSigned && (
-            <button
-              onClick={handleDownloadSignedPdf}
-              className="flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-5 py-2 text-sm font-bold text-accent hover:bg-accent/20 transition"
-            >
-              <Lock className="w-4 h-4" />
-              {report.is_digitally_signed ? "Download Signed PDF" : "Download PDF"}
-            </button>
-          )}
+        <div className="flex gap-2 flex-wrap items-center">
+          <CompliancePdfActions reportId={id} isSigned={report.is_digitally_signed} />
           {isFinalized ? (
             <a
               href={`https://gateway.pinata.cloud/ipfs/${report.ipfs_cid}`}
@@ -225,6 +202,19 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
 
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-6">
+
+          {user?.role === "evaluator" && !isFinalized && (
+            <EvaluatorAmendmentPanel
+              report={report}
+              onSaved={fetchReport}
+              disabled={submitting}
+            />
+          )}
+
+          <EvaluationAuditTimeline
+            logs={report.evaluation_logs}
+            references={report.evaluator_references}
+          />
 
           {report.status === "pending" && !isFinalized && user?.role === "evaluator" && (
             <ReviewConsole 

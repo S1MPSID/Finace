@@ -43,7 +43,10 @@ function sortSessions(sessions: ChatSessionRow[]) {
 /** One-time load after login — sidebar reads from Redux after this. */
 export const fetchChatSessions = createAsyncThunk(
   "chatSessions/fetchAll",
-  async (_, { rejectWithValue }) => {
+  async (_, { getState, rejectWithValue }) => {
+    const role = (getState() as { auth?: { user?: { role?: string } } }).auth?.user?.role;
+    if (role === "evaluator") return [];
+
     try {
       const data: any = await chatHistoryApi.list();
       return (data.sessions || []).map(toSessionRow);
@@ -74,6 +77,11 @@ const chatSessionsSlice = createSlice({
       state.status = "idle";
       state.loaded = false;
     },
+    markChatSessionsLoaded(state) {
+      state.sessions = [];
+      state.status = "succeeded";
+      state.loaded = true;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -97,6 +105,6 @@ const chatSessionsSlice = createSlice({
   },
 });
 
-export const { upsertChatSession, removeChatSession, clearChatSessions } =
+export const { upsertChatSession, removeChatSession, clearChatSessions, markChatSessionsLoaded } =
   chatSessionsSlice.actions;
 export default chatSessionsSlice.reducer;

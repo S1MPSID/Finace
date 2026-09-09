@@ -23,6 +23,7 @@ export default function LoginPage() {
   const dispatch = useAppDispatch();
   const isAuthenticated = useAppSelector((s) => s.auth.isAuthenticated);
   const authReady = useAppSelector((s) => s.auth.authReady);
+  const authUser = useAppSelector((s) => s.auth.user);
 
   useEffect(() => {
     if (!authReady) dispatch(hydrateAuth());
@@ -30,9 +31,9 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (authReady && isAuthenticated) {
-      router.replace("/dashboard");
+      router.replace(authUser?.role === "evaluator" ? "/dashboard/evaluator" : "/dashboard");
     }
-  }, [authReady, isAuthenticated, router]);
+  }, [authReady, isAuthenticated, authUser?.role, router]);
 
   const finishLogin = (user: any, token: string, dest: string) => {
     dispatch(loginSuccess({ user, token }));

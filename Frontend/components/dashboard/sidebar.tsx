@@ -43,6 +43,7 @@ export function DashboardSidebar({
 }) {
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
+  const isEvaluator = user?.role === "evaluator";
   const sessions = useAppSelector((s) => s.chatSessions.sessions);
   const router = useRouter();
   const pathname = usePathname();
@@ -133,19 +134,28 @@ export function DashboardSidebar({
         </button>
       </div>
 
-      <div className="px-3 pb-3">
-        <button
-          type="button"
-          onClick={handleNewChat}
-          className="flex w-full items-center gap-2 rounded-2xl border border-accent/30 bg-accent/10 px-3 py-2.5 text-sm font-medium text-accent hover:bg-accent/15 transition"
-        >
-          <Plus className="h-4 w-4" />
-          New chat
-        </button>
-      </div>
+      {!isEvaluator && (
+        <div className="px-3 pb-3">
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="flex w-full items-center gap-2 rounded-2xl border border-accent/30 bg-accent/10 px-3 py-2.5 text-sm font-medium text-accent hover:bg-accent/15 transition"
+          >
+            <Plus className="h-4 w-4" />
+            New chat
+          </button>
+        </div>
+      )}
 
       <nav className="px-2 space-y-0.5">
-        {items.map((item) => {
+        {items
+          .filter(
+            (item) =>
+              !isEvaluator ||
+              item.href === "/dashboard/evaluator" ||
+              item.href === "/dashboard/audit"
+          )
+          .map((item) => {
           const active =
             item.href === "/dashboard"
               ? pathname === "/dashboard"
@@ -168,6 +178,7 @@ export function DashboardSidebar({
         })}
       </nav>
 
+      {!isEvaluator && (
       <div className="mt-4 flex min-h-0 flex-1 flex-col border-t border-white/[0.05] pt-3">
         <p className="px-4 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/35">
           Recents
@@ -215,6 +226,7 @@ export function DashboardSidebar({
           })}
         </div>
       </div>
+      )}
 
       {user && (
         <div className="border-t border-white/[0.05] p-2">

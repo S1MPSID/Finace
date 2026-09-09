@@ -1,5 +1,5 @@
 """
-Generate compliance report PDF from analysis payload.
+Generate formal regulatory compliance report PDF from analysis payload.
 """
 from __future__ import annotations
 
@@ -14,16 +14,23 @@ from reportlab.platypus import SimpleDocTemplate
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from config import settings
+from reports.page_template import make_page_callbacks
 from reports.pdf_styles import build_pdf_styles
 from reports.sections.core_sections import (
-    append_citations,
+    REPORT_KIND_LABELS,
+    append_certification,
+    append_compliance_determination,
     append_cover,
-    append_executive_summary,
-    append_methodology,
-    append_risk_section,
+    append_document_control,
+    append_evaluator_amendments,
+    append_gaps_and_actions,
+    append_regulatory_schedule,
+    append_scope,
+    append_table_of_contents,
+    append_upgrade_record,
     append_workflow_appendix,
+    infer_report_kind,
 )
-from reports.sections.trust_sections import append_conversation_snapshots, append_trust_analytics
 
 
 def generate_report_pdf(
@@ -39,24 +46,33 @@ def generate_report_pdf(
     styles = build_pdf_styles()
     story = []
 
-    append_cover(story, styles, analysis, report_id, org_name)
-    append_methodology(story, styles)
-    append_executive_summary(story, styles, analysis)
-    append_risk_section(story, styles, analysis)
-    append_citations(story, styles, analysis)
-    append_trust_analytics(story, styles, analysis)
-    append_conversation_snapshots(story, styles, analysis)
+    report_kind = append_cover(story, styles, analysis, report_id, org_name)
+    append_table_of_contents(story, styles, report_kind)
+    append_document_control(story, styles, analysis, report_id, report_kind)
+    append_scope(story, styles, analysis)
+    append_compliance_determination(story, styles, analysis)
+    append_gaps_and_actions(story, styles, analysis)
+    append_regulatory_schedule(story, styles, analysis)
+    if report_kind == "upgrade":
+        append_upgrade_record(story, styles, analysis)
+    append_evaluator_amendments(story, styles, analysis)
+    append_certification(story, styles, analysis)
     append_workflow_appendix(story, styles, analysis)
+
+    on_first, on_later = make_page_callbacks(report_id, REPORT_KIND_LABELS.get(report_kind, "Compliance Report"))
 
     doc = SimpleDocTemplate(
         str(out_path),
         pagesize=A4,
-        rightMargin=72,
-        leftMargin=72,
+        rightMargin=54,
+        leftMargin=54,
         topMargin=72,
-        bottomMargin=18,
+        bottomMargin=54,
+        title=f"Compliance Report {report_id}",
+        author="Finace Autonomous Compliance Engine",
+        subject=REPORT_KIND_LABELS.get(report_kind, "Compliance Report"),
     )
-    doc.build(story)
+    doc.build(story, onFirstPage=on_first, onLaterPages=on_later)
     return out_path
 
 

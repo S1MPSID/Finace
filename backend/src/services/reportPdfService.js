@@ -2,10 +2,16 @@ import { postJson } from "./httpClient.js";
 import { env } from "../config/env.js";
 
 export async function generateReportPdf(report, orgName = "Finace Organization") {
+  const doc = typeof report.toObject === "function" ? report.toObject() : report;
+  const isUpgrade = Array.isArray(doc.evaluation_metadata?.update_history) &&
+    doc.evaluation_metadata.update_history.length > 0;
   const analysisPayload = {
-    ...report.toObject(),
-    trust_stats: report.trust_stats || {},
-    conversation_snapshots: report.conversation_snapshots || [],
+    ...doc,
+    call_type: doc.call_type || (isUpgrade ? "update_report" : "new_report"),
+    trust_stats: doc.trust_stats || report.trust_stats || {},
+    conversation_snapshots: doc.conversation_snapshots || report.conversation_snapshots || [],
+    evaluation_logs: doc.evaluation_logs || report.evaluation_logs || [],
+    evaluator_references: doc.evaluator_references || report.evaluator_references || [],
   };
 
   return postJson(

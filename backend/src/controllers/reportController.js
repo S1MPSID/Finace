@@ -5,9 +5,10 @@ import { ChatSession } from "../models/ChatSession.js";
 import { env } from "../config/env.js";
 import { postJson } from "../services/httpClient.js";
 import { getBlockchainDeployment } from "../services/blockchainService.js";
-import { generateAndSignReport } from "../services/reportPdfService.js";
+import { generateAndSignReport, generateReportPdf } from "../services/reportPdfService.js";
 import { loadChatContext } from "../utils/chatContext.js";
-import { resolveReportPdfPath } from "../utils/reportPdfPaths.js";
+import { clearReportPdfFiles, resolveReportPdfPath } from "../utils/reportPdfPaths.js";
+import { buildEvaluationLogEntry } from "../utils/evaluationLog.js";
 
 export async function generateReport(req, res) {
   const { workflow_text, regulator, chat_id } = req.body;
@@ -85,6 +86,23 @@ export async function updateReport(req, res) {
   );
 
   const analysis = result?.analysis || {};
+  const aiLog = buildEvaluationLogEntry({
+    action: "ai_refresh",
+    actor: { name: "Finace AI Engine", role: "system", id: "system" },
+    comment: "AI re-assessment (compliance upgrade cycle)",
+    changes: [
+      {
+        field: "compliance_score",
+        old_value: existing.compliance_score,
+        new_value:
+          typeof analysis.compliance_score === "number"
+            ? analysis.compliance_score
+            : existing.compliance_score,
+      },
+      { field: "risk_level", old_value: existing.risk_level, new_value: analysis.risk_level || existing.risk_level },
+    ],
+  });
+
   const updated = await Report.findOneAndUpdate(
     { report_id },
     {
@@ -110,6 +128,7 @@ export async function updateReport(req, res) {
       is_digitally_signed: false,
       pdf_signature: {},
       $push: {
+        evaluation_logs: aiLog,
         "evaluation_metadata.update_history": {
           updated_at: new Date(),
           superseded_references: analysis.superseded_references || [],
@@ -163,6 +182,45 @@ export async function signReport(req, res) {
   });
 }
 
+async function ensureReportPdfFile(report, { forceRefresh = false } = {}) {
+  let filePath = forceRefresh ? null : resolveReportPdfPath(report);
+
+  if (!filePath || forceRefresh) {
+    if (forceRefresh) {
+      clearReportPdfFiles(report);
+      await Report.updateOne(
+        { report_id: report.report_id },
+        {
+          $unset: { pdf_path: 1, signed_pdf_path: 1 },
+          $set: {
+            is_digitally_signed: false,
+            proof_status: report.proof_status === "anchored" ? "anchored" : "none",
+          },
+        }
+      );
+    }
+
+    const orgName =
+      report.workflow_input?.org_name ||
+      report.evaluation_metadata?.org_name ||
+      "Finace Organization";
+    const generated = await generateReportPdf(report, orgName);
+    const pdfPath = generated?.pdf_path;
+    if (pdfPath) {
+      await Report.updateOne(
+        { report_id: report.report_id },
+        {
+          pdf_path: pdfPath,
+          proof_status: report.proof_status === "none" ? "pdf_ready" : report.proof_status,
+        }
+      );
+      filePath = pdfPath;
+    }
+  }
+
+  return filePath;
+}
+
 export async function downloadReportPdf(req, res) {
   const filter = { report_id: req.params.id };
   if (req.user?.role === "user") filter.user_id = req.user.user_id;
@@ -170,14 +228,39 @@ export async function downloadReportPdf(req, res) {
   const report = await Report.findOne(filter);
   if (!report) return res.status(404).json({ ok: false, error: "Report not found" });
 
-  const filePath = resolveReportPdfPath(report);
+  const forceRefresh =
+    String(req.query.refresh || "").toLowerCase() === "1" ||
+    String(req.query.regenerate || "").toLowerCase() === "1";
+
+  let filePath;
+  try {
+    filePath = await ensureReportPdfFile(report, { forceRefresh });
+  } catch (genErr) {
+    const detail =
+      genErr?.message?.includes("fetch failed") || genErr?.code === "ECONNREFUSED"
+        ? "Python RAG service is not reachable. Start it on port 8000 and wait for 'Application startup complete'."
+        : genErr?.message || "PDF generation failed";
+    console.warn("On-demand PDF generation failed:", detail);
+    return res.status(503).json({ ok: false, error: detail });
+  }
+
   if (!filePath) return res.status(404).json({ ok: false, error: "PDF not generated yet" });
 
   const filename = `${report.report_id}${report.is_digitally_signed ? ".signed" : ""}.pdf`;
+  const inline = String(req.query.disposition || "").toLowerCase() === "inline";
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader(
+    "Content-Disposition",
+    `${inline ? "inline" : "attachment"}; filename="${filename}"`
+  );
   if (report.document_hash) res.setHeader("X-Document-Hash", report.document_hash);
   res.sendFile(path.resolve(filePath));
+}
+
+export async function regenerateReportPdf(req, res) {
+  req.query = { ...req.query, refresh: "1" };
+  return downloadReportPdf(req, res);
 }
 
 export async function prepareProof(req, res) {

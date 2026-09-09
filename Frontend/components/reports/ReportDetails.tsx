@@ -2,8 +2,13 @@ import { Info, ShieldAlert, CheckCircle2, FileText, ExternalLink, ListOrdered } 
 import { motion } from "framer-motion";
 import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
 import { isPdfSourcePath, resolvePublicDocUrl } from "@/lib/docs/publicDocUrl";
+import { useDocCatalog } from "@/hooks/useDocCatalog";
+import { resolveDocPath } from "@/lib/docs/docCatalog";
+import { toDisplayHtml, toDisplayText } from "@/lib/text/renderRich";
 
 export function ReportDetails({ report }: { report: any }) {
+  const { catalog } = useDocCatalog();
+
   return (
     <>
       <motion.div
@@ -19,8 +24,8 @@ export function ReportDetails({ report }: { report: any }) {
           <h3 className="text-xs font-bold uppercase tracking-wider text-white/40">Executive Summary</h3>
         </div>
         <div
-          className="text-white/80 leading-relaxed text-base prose-custom"
-          dangerouslySetInnerHTML={{ __html: report.explanation }}
+          className="text-white/80 leading-relaxed text-base prose-custom [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-white [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1"
+          dangerouslySetInnerHTML={{ __html: toDisplayHtml(report.explanation || "") }}
         />
       </motion.div>
 
@@ -69,7 +74,7 @@ export function ReportDetails({ report }: { report: any }) {
             {(report.risk_flags || []).map((flag: string, i: number) => (
               <li key={i} className="flex gap-3 items-start text-sm text-white/70 leading-6">
                 <span className="shrink-0 h-1.5 w-1.5 rounded-full bg-rose-400 mt-2.5" />
-                <span>{flag}</span>
+                <span>{toDisplayText(flag)}</span>
               </li>
             ))}
             {(!report.risk_flags || report.risk_flags.length === 0) && (
@@ -94,7 +99,7 @@ export function ReportDetails({ report }: { report: any }) {
             {(report.recommendations || []).map((rec: string, i: number) => (
               <li key={i} className="flex gap-3 items-start text-sm text-white/70 leading-6">
                 <span className="shrink-0 h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2.5" />
-                <span>{rec}</span>
+                <span>{toDisplayText(rec)}</span>
               </li>
             ))}
           </ul>
@@ -115,37 +120,51 @@ export function ReportDetails({ report }: { report: any }) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
           {(report.applicable_clauses || []).map((clause: any, i: number) => {
-            const source = clause.source || "";
-            const isGeneric = !source || source === "Regulation" || source === "N/A" || source.toLowerCase().includes("guidelines") || source.toLowerCase().includes("circular");
-            const isDoc = !isGeneric && isPdfSourcePath(source);
-            const docUrl = isDoc ? resolvePublicDocUrl(source) : null;
+            const source = clause.source || clause.document_name || "";
+            const resolvedPath =
+              clause.document_path ||
+              resolveDocPath(clause.document_name || "", catalog) ||
+              (isPdfSourcePath(source) ? source : resolveDocPath(source, catalog));
+            const docUrl = resolvedPath ? resolvePublicDocUrl(resolvedPath) : null;
+            const displayName =
+              clause.document_name ||
+              (resolvedPath ? resolvedPath.split("/").pop()?.replace(/\.pdf$/i, "") : "") ||
+              source ||
+              "Legal Reference";
 
             return (
               <div
                 key={i}
-                onClick={() => docUrl && window.open(docUrl, "_blank")}
-                title={docUrl ? `View ${source}` : ""}
-                className={`group relative border-l-2 border-accent/20 pl-5 py-3 transition-all duration-300 hover:border-accent hover:bg-white/[0.03] rounded-r-2xl ${docUrl ? "cursor-pointer" : ""}`}
+                className="group relative border-l-2 border-accent/20 pl-5 py-3 transition-all duration-300 hover:border-accent hover:bg-white/[0.03] rounded-r-2xl"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1.5 text-[10px] font-mono text-accent/60 group-hover:text-accent transition-colors">
-                    <FileText className="w-3.5 h-3.5" />
-                    <span className="truncate max-w-[200px]">{source || "Legal Reference"}</span>
-                  </div>
-                  {docUrl && (
-                    <div className="flex items-center gap-1 text-[10px] font-bold text-accent opacity-0 group-hover:opacity-100 transition-all">
-                      VIEW PDF <ExternalLink className="w-3 h-3" />
+                <div className="flex items-center justify-between mb-2 gap-2">
+                  {docUrl ? (
+                    <a
+                      href={docUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1.5 text-[10px] font-mono text-accent/80 hover:text-accent transition-colors underline-offset-2 hover:underline"
+                    >
+                      <FileText className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate max-w-[220px]">{displayName}</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-accent/60">
+                      <FileText className="w-3.5 h-3.5" />
+                      <span className="truncate max-w-[220px]">{displayName}</span>
                     </div>
                   )}
                 </div>
 
                 <h4 className="text-white font-semibold text-sm mb-2 group-hover:text-accent transition-colors">
-                  {clause.title || "Compliance Clause"}
+                  {toDisplayText(clause.title || "Compliance Clause")}
                 </h4>
 
-                <div className="relative overflow-hidden transition-all duration-500 ease-in-out max-h-16 group-hover:max-h-[500px]">
+                <div className="relative overflow-hidden transition-all duration-500 ease-in-out max-h-20 group-hover:max-h-[500px]">
                   <p className="text-xs text-white/45 leading-relaxed italic group-hover:text-white/70 transition-colors">
-                    &quot;{clause.text}&quot;
+                    &quot;{toDisplayText(clause.text || "")}&quot;
                   </p>
                   <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-[#0d1413] to-transparent group-hover:opacity-0 transition-opacity duration-300" />
                 </div>

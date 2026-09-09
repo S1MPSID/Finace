@@ -3,8 +3,22 @@ import { ChatSession } from "../models/ChatSession.js";
 import { HttpError } from "../utils/httpError.js";
 import { buildTrustStats } from "../utils/trustAnalytics.js";
 
+function isEvaluator(req) {
+  return req.user?.role === "evaluator";
+}
+
 function getUserId(req) {
+  if (isEvaluator(req)) return null;
   return req.user?.user_id || req.user?.id || req.user?.sub || null;
+}
+
+function requireCompanyUser(req) {
+  if (isEvaluator(req)) {
+    throw new HttpError(403, "forbidden", "Chat history is not available for evaluator accounts");
+  }
+  const userId = getUserId(req);
+  if (!userId) throw new HttpError(401, "unauthorized", "User id missing from token");
+  return userId;
 }
 
 function titleFromMessages(messages = []) {
@@ -15,8 +29,10 @@ function titleFromMessages(messages = []) {
 }
 
 export async function listChatSessions(req, res) {
-  const userId = getUserId(req);
-  if (!userId) throw new HttpError(401, "unauthorized", "User id missing from token");
+  if (isEvaluator(req)) {
+    return res.json({ ok: true, sessions: [] });
+  }
+  const userId = requireCompanyUser(req);
 
   const sessions = await ChatSession.find({ user_id: userId })
     .sort({ updated_at: -1 })
@@ -39,8 +55,7 @@ export async function listChatSessions(req, res) {
 }
 
 export async function getChatSession(req, res) {
-  const userId = getUserId(req);
-  if (!userId) throw new HttpError(401, "unauthorized", "User id missing from token");
+  const userId = requireCompanyUser(req);
 
   const session = await ChatSession.findOne({
     session_id: req.params.id,
@@ -52,8 +67,7 @@ export async function getChatSession(req, res) {
 }
 
 export async function createChatSession(req, res) {
-  const userId = getUserId(req);
-  if (!userId) throw new HttpError(401, "unauthorized", "User id missing from token");
+  const userId = requireCompanyUser(req);
 
   const messages = Array.isArray(req.body.messages) ? req.body.messages : [];
   const session_id = `chat_${crypto.randomBytes(6).toString("hex")}`;
@@ -74,8 +88,7 @@ export async function createChatSession(req, res) {
 }
 
 export async function upsertChatSession(req, res) {
-  const userId = getUserId(req);
-  if (!userId) throw new HttpError(401, "unauthorized", "User id missing from token");
+  const userId = requireCompanyUser(req);
 
   const messages = Array.isArray(req.body.messages) ? req.body.messages : [];
   const lastAi = [...messages].reverse().find((m) => m.role === "ai");
@@ -109,8 +122,7 @@ export async function upsertChatSession(req, res) {
 }
 
 export async function deleteChatSession(req, res) {
-  const userId = getUserId(req);
-  if (!userId) throw new HttpError(401, "unauthorized", "User id missing from token");
+  const userId = requireCompanyUser(req);
 
   const deleted = await ChatSession.findOneAndDelete({
     session_id: req.params.id,

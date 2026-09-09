@@ -1,6 +1,6 @@
 # Finace — AI-Powered Compliance Engine
 
-An autonomous compliance decision engine that uses RAG (Retrieval-Augmented Generation) to interpret fintech regulations, detect compliance risks, generate audit-ready reports, explain scores with SHAP/LIME, anchor cryptographic proofs to the blockchain, and produce **digitally signed PDFs** with persisted trust analytics.
+An autonomous compliance decision engine that uses RAG (Retrieval-Augmented Generation) to interpret fintech regulations, detect compliance risks, generate audit-ready reports, explain scores with SHAP/LIME, anchor cryptographic proofs to the blockchain, and produce **digitally signed PDFs** with persisted trust analytics. **Evaluators** can manually amend AI-generated compliance, attach regulatory references, and every change is **audit-logged** for the company.
 
 ## Architecture
 

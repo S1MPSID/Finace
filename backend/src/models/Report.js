@@ -40,6 +40,31 @@ const reportSchema = new mongoose.Schema(
     evaluation_metadata: {
       type: Object,
     },
+    reasoning_steps: [String],
+    xai: {
+      type: Object,
+      default: {},
+    },
+    chat_id: String,
+    trust_stats: { type: Object, default: {} },
+    conversation_snapshots: { type: [Object], default: [] },
+    signed_pdf_path: String,
+    document_hash: String,
+    pdf_signature: { type: Object, default: {} },
+    is_digitally_signed: { type: Boolean, default: false },
+    proof_status: {
+      type: String,
+      enum: ["none", "pdf_ready", "signed", "anchored"],
+      default: "none",
+    },
+    evaluation_logs: {
+      type: [Object],
+      default: [],
+    },
+    evaluator_references: {
+      type: [Object],
+      default: [],
+    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

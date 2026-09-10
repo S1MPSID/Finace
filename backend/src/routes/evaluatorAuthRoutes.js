@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { Evaluator } from "../models/Evaluator.js";
 import { signToken } from "../utils/jwtHelper.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { requireEvaluatorAuth } from "../middlewares/requireEvaluatorAuth.js";
 
 const router = Router();
 
@@ -92,6 +93,24 @@ router.post(
         name: evaluator.name,
         email: evaluator.email,
         role: evaluator.role,
+      },
+    });
+  })
+);
+
+// GET /api/v1/evaluator/auth/me — restore evaluator session from Bearer token
+router.get(
+  "/me",
+  requireEvaluatorAuth,
+  asyncHandler(async (req, res) => {
+    const payload = req.evaluator || {};
+    res.json({
+      ok: true,
+      user: {
+        id: payload.evaluator_id || payload.id,
+        name: payload.name || payload.email || "Evaluator",
+        email: payload.email,
+        role: "evaluator",
       },
     });
   })

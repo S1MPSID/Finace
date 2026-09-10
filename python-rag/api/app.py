@@ -7,7 +7,8 @@ Run:
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from pathlib import Path
+import asyncio
+import os
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +22,10 @@ from api.schemas import (
     AnalyzeResponse,
     ReportRequest,
     ReportResponse,
+    ReportSignRequest,
+    ReportSignResponse,
+    ReportHashRequest,
+    ReportHashResponse,
     IpfsRequest,
     IpfsResponse,
     ProofRequest,
@@ -34,10 +39,27 @@ from api.services import RAGApiService
 service = RAGApiService()
 
 
+def _warmup_models() -> None:
+    logger.info("Warming embedder (first load can take ~30s on t2.micro)...")
+    service.retriever.embedder.embed_query("RBI KYC compliance warmup")
+    logger.info("Embedder ready")
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     logger.info("Starting python-rag FastAPI wrapper")
+    warmup_task = None
+    if os.getenv("WARM_EMBEDDER", "1") == "1":
+        loop = asyncio.get_running_loop()
+        # Do not block startup — PDF/report routes work without the embedder.
+        warmup_task = loop.run_in_executor(None, _warmup_models)
+        logger.info("Embedder warmup running in background (first run downloads ~1.3GB model)")
     yield
+    if warmup_task is not None:
+        try:
+            await warmup_task
+        except Exception:
+            logger.exception("Embedder warmup failed")
     logger.info("Stopping python-rag FastAPI wrapper")
 
 
@@ -117,6 +139,41 @@ async def generate_report(payload: ReportRequest) -> ReportResponse:
     except Exception as exc:
         logger.exception("Report generation failed")
         raise HTTPException(status_code=500, detail="Report generation failed") from exc
+
+
+@app.post("/report/sign", response_model=ReportSignResponse)
+async def sign_report(payload: ReportSignRequest) -> ReportSignResponse:
+    try:
+        result = service.sign_report(
+            pdf_path=payload.pdf_path,
+            report_id=payload.report_id,
+            signer_name=payload.signer_name,
+            signer_role=payload.signer_role,
+            remarks=payload.remarks,
+        )
+        return ReportSignResponse(
+            ok=True,
+            signed_pdf_path=result["signed_pdf_path"],
+            document_hash=result["document_hash"],
+            pdf_signature=result.get("pdf_signature", {}),
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Report signing failed")
+        raise HTTPException(status_code=500, detail="Report signing failed") from exc
+
+
+@app.post("/report/hash", response_model=ReportHashResponse)
+async def hash_report_file(payload: ReportHashRequest) -> ReportHashResponse:
+    try:
+        result = service.hash_file(payload.file_path)
+        return ReportHashResponse(**result)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Report hash failed")
+        raise HTTPException(status_code=500, detail="Report hash failed") from exc
 
 
 # ──────────────────────────────────────────────

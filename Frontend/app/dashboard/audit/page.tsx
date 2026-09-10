@@ -1,16 +1,24 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAppStore } from "@/store/appStore";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchReports } from "@/store/slices/reportsSlice";
 import { Copy, ExternalLink, ShieldCheck, Loader2 } from "lucide-react";
+import { statusTone } from "@/lib/dashboard/reportTitle";
 import { motion } from "framer-motion";
+import { FieldChangeDiff } from "@/components/reports/FieldChangeDiff";
+import { groupEvaluationLogs } from "@/lib/evaluation/groupEvaluationLogs";
+import { htmlToPlainText } from "@/lib/text/htmlToPlain";
 
 export default function AuditPage() {
-  const { auditLogs, isLoading, fetchReports } = useAppStore();
+  const dispatch = useAppDispatch();
+  const auditLogs = useAppSelector((s) => s.reports.auditLogs);
+  const reports = useAppSelector((s) => s.reports.reports);
+  const isLoading = useAppSelector((s) => s.reports.isLoading);
 
   useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
+    dispatch(fetchReports());
+  }, [dispatch]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -27,6 +35,59 @@ export default function AuditPage() {
         <p className="mt-4 max-w-2xl text-sm leading-7 text-white/65">
           All finalized compliance reports are hashed and anchored to the Base Sepolia blockchain for cryptographic traceability.
         </p>
+      </div>
+
+      <div className="glass rounded-[1.8rem] p-6">
+        <h3 className="text-lg font-medium text-white mb-2">Evaluation Change Log</h3>
+        <p className="text-sm text-white/50 mb-6">
+          Manual evaluator amendments, references, and AI refresh events on your compliance reports.
+        </p>
+        {isLoading ? (
+          <div className="flex items-center text-white/50"><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Loading...</div>
+        ) : (
+          <div className="space-y-3 max-h-[320px] overflow-y-auto pr-1">
+            {reports
+              .flatMap((r: any) =>
+                groupEvaluationLogs(r.evaluation_logs || []).map((log: any) => ({
+                  ...log,
+                  report_id: r.report_id,
+                }))
+              )
+              .sort(
+                (a: any, b: any) =>
+                  new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
+              )
+              .slice(0, 25)
+              .map((entry: any) => (
+                <div
+                  key={entry.log_id}
+                  className="rounded-xl border border-accent/35 bg-white/[0.02] px-4 py-3 text-sm"
+                >
+                  <p className="font-mono text-xs text-accent/70">{entry.report_id}</p>
+                  <p className="text-white/80 mt-1">
+                    <span className="font-semibold uppercase text-[10px] text-white/45">{entry.action}</span>
+                    {" · "}
+                    {entry.actor_name} — {entry.created_at ? new Date(entry.created_at).toLocaleString() : "—"}
+                  </p>
+                  {entry.comment && (
+                    <p className="text-white/55 mt-1 text-xs">{htmlToPlainText(entry.comment)}</p>
+                  )}
+                  {Array.isArray(entry.changes) &&
+                    entry.changes.map((ch: any, i: number) => (
+                      <FieldChangeDiff
+                        key={i}
+                        field={ch.field}
+                        oldValue={ch.old_value}
+                        newValue={ch.new_value}
+                      />
+                    ))}
+                </div>
+              ))}
+            {reports.every((r: any) => !(r.evaluation_logs || []).length) && (
+              <p className="text-white/40 text-sm">No evaluation changes yet.</p>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="glass rounded-[1.8rem] p-6">
@@ -49,8 +110,10 @@ export default function AuditPage() {
                     <p className="text-xs uppercase tracking-[0.18em] text-white/40 mb-1">Report ID</p>
                     <p className="text-sm font-mono text-white/85">{report.report_id}</p>
                   </div>
-                  <span className="rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
-                    Verified
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] ring-1 ring-inset ${statusTone(report.status)}`}
+                  >
+                    {report.status || "anchored"}
                   </span>
                 </div>
 

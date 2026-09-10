@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { ACCENT_DEEP_RGB, ACCENT_HEX, ACCENT_RGB } from "./lib/theme/colors";
 
 const config: Config = {
   content: [
@@ -12,16 +13,15 @@ const config: Config = {
         ink: "#090d0d",
         panel: "#101716",
         mist: "#eef2ef",
-        accent: "#7ef0cf",
-        emerald: "#1b6d5b",
+        accent: ACCENT_HEX,
+        emerald: "#15803d",
         line: "rgba(255,255,255,0.09)",
       },
       boxShadow: {
-        glow: "0 20px 80px rgba(44, 196, 154, 0.18)",
+        glow: `0 20px 80px rgba(${ACCENT_RGB}, 0.2)`,
       },
       backgroundImage: {
-        dots:
-          "radial-gradient(circle at center, rgba(126, 240, 207, 0.28) 0, rgba(126, 240, 207, 0.28) 1px, transparent 1px)",
+        dots: `radial-gradient(circle at center, rgba(${ACCENT_RGB}, 0.28) 0, rgba(${ACCENT_RGB}, 0.28) 1px, transparent 1px)`,
       },
     },
   },

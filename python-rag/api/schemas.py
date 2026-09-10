@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 # ── Existing models ──
 
 class QueryRequest(BaseModel):
-    prompt: str = Field(min_length=3, max_length=6000)
+    prompt: str = Field(min_length=3, max_length=32000)
     top_k: int = Field(default=5, ge=1, le=20)
     regulator: str | None = Field(default=None, max_length=120)
     category: str | None = Field(default=None, max_length=120)
@@ -22,6 +22,7 @@ class QueryResponse(BaseModel):
     analysis: dict[str, Any]
     rules: dict[str, Any]
     retrieval_hits: list[dict[str, Any]]
+    xai: dict[str, Any] = Field(default_factory=dict)
 
 
 class HealthResponse(BaseModel):
@@ -54,6 +55,7 @@ class AnalyzeResponse(BaseModel):
     analysis: dict[str, Any]
     rules: dict[str, Any]
     retrieval_hits: list[dict[str, Any]]
+    xai: dict[str, Any] = Field(default_factory=dict)
 
 
 # ── New: /report ──
@@ -68,6 +70,29 @@ class ReportResponse(BaseModel):
     ok: bool = True
     pdf_path: str
     report_id: str
+
+
+class ReportSignRequest(BaseModel):
+    pdf_path: str = Field(min_length=1)
+    report_id: str = Field(min_length=1, max_length=100)
+    signer_name: str = Field(default="Authorized Evaluator", max_length=200)
+    signer_role: str = Field(default="Compliance Evaluator", max_length=200)
+    remarks: str = Field(default="", max_length=2000)
+
+
+class ReportSignResponse(BaseModel):
+    ok: bool = True
+    signed_pdf_path: str
+    document_hash: str
+    pdf_signature: dict[str, Any] = Field(default_factory=dict)
+
+
+class ReportHashRequest(BaseModel):
+    file_path: str = Field(min_length=1)
+
+
+class ReportHashResponse(BaseModel):
+    document_hash: str
 
 
 # ── New: /ipfs ──

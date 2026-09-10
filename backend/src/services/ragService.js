@@ -14,10 +14,14 @@ export async function runGeneralQuery(input) {
 }
 
 async function runHttpQuery({ prompt, topK = 5, regulator = null, category = null }) {
+  const maxChars = env.ragPromptMaxChars;
+  const trimmedPrompt =
+    prompt.length > maxChars ? prompt.slice(prompt.length - maxChars) : prompt;
+
   return postJson(
     `${env.fastApiBaseUrl}/query`,
     {
-      prompt,
+      prompt: trimmedPrompt,
       top_k: topK,
       regulator,
       category,

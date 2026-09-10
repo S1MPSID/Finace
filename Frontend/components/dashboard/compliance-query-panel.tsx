@@ -1,11 +1,13 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { motion } from "framer-motion";
 
 import { queryCompliance, type RagQueryResponse } from "@/services/api";
+import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
 
 const starterPrompt =
-  "We are launching a cross-border crypto wallet for users in India and the UAE. What compliance risks should we address first?";
+  "We are launching a cross-border crypto wallet for users in India and the UAE without KYC. What compliance risks should we address first?";
 
 export function ComplianceQueryPanel() {
   const [prompt, setPrompt] = useState(starterPrompt);
@@ -35,10 +37,13 @@ export function ComplianceQueryPanel() {
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm text-accent">Live Query Flow</p>
-            <h2 className="mt-3 text-2xl font-semibold text-white">Frontend to Node to FastAPI</h2>
+            <h2 className="mt-3 text-2xl font-semibold text-white">Ask · Retrieve · Explain</h2>
+            <p className="mt-2 text-sm text-white/50 leading-6 max-w-lg">
+              Queries run through Node → FastAPI RAG, then SHAP/LIME explain the score drivers.
+            </p>
           </div>
-          <span className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/60">
-            Production wiring
+          <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-accent">
+            XAI enabled
           </span>
         </div>
 
@@ -61,7 +66,7 @@ export function ComplianceQueryPanel() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-ink transition disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-ink transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? "Analyzing..." : "Run Compliance Query"}
             </button>
@@ -78,19 +83,6 @@ export function ComplianceQueryPanel() {
             </button>
           </div>
         </form>
-
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {[
-            ["Frontend", "Collects the user query and sends a typed request."],
-            ["Node API", "Validates input and routes the call through the gateway."],
-            ["FastAPI", "Executes the Python RAG pipeline and returns structured output."],
-          ].map(([label, detail]) => (
-            <div key={label} className="rounded-[1.2rem] border border-white/8 bg-white/[0.03] p-4">
-              <p className="text-xs uppercase tracking-[0.18em] text-white/40">{label}</p>
-              <p className="mt-3 text-sm leading-6 text-white/68">{detail}</p>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="space-y-4">
@@ -100,7 +92,6 @@ export function ComplianceQueryPanel() {
 
           {isSubmitting ? (
             <div className="mt-6 space-y-4">
-              <LoadingCard />
               <LoadingCard />
               <LoadingCard />
             </div>
@@ -117,7 +108,7 @@ export function ComplianceQueryPanel() {
                     {result.riskLevel} Risk
                   </span>
                   <span className="text-xs uppercase tracking-[0.18em] text-white/45">
-                    Confidence {(result.confidence * 100).toFixed(0)}%
+                    Score {result.complianceScore ?? "--"}/100
                   </span>
                 </div>
                 <p className="mt-4 text-sm leading-7 text-white/78">{result.answer}</p>
@@ -158,8 +149,7 @@ export function ComplianceQueryPanel() {
           ) : (
             <div className="mt-6 rounded-[1.4rem] border border-dashed border-white/10 bg-white/[0.03] p-5">
               <p className="text-sm leading-7 text-white/60">
-                Submit a query to see the Node gateway call the FastAPI wrapper and render the
-                structured compliance response here.
+                Submit a query to render the structured compliance response and XAI charts here.
               </p>
             </div>
           )}
@@ -168,14 +158,14 @@ export function ComplianceQueryPanel() {
         <div className="glass rounded-[1.8rem] p-6">
           <p className="text-xs uppercase tracking-[0.18em] text-white/45">Citations</p>
           <div className="mt-5 space-y-4">
-            {result?.citations?.length ? (
-              result.citations.slice(0, 3).map((citation, index) => (
-                <article key={`${citation.source}-${index}`} className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
+            {result?.citations?.length || result?.sources?.length ? (
+              (result.citations || result.sources || []).slice(0, 3).map((citation: any, index: number) => (
+                <article key={`${citation.source || citation.document_id}-${index}`} className="rounded-[1.3rem] border border-white/8 bg-white/[0.03] p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-white/40">
-                    {citation.source || "Source"}
+                    {citation.source || citation.document_id || "Source"}
                   </p>
                   <h3 className="mt-3 text-base font-semibold text-white">
-                    {citation.title || "Applicable Clause"}
+                    {citation.title || citation.section || "Applicable Clause"}
                   </h3>
                   <p className="mt-3 text-sm leading-7 text-white/62">{citation.text}</p>
                 </article>
@@ -188,6 +178,12 @@ export function ComplianceQueryPanel() {
           </div>
         </div>
       </div>
+
+      {result?.xai && (
+        <motion.div className="xl:col-span-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <ExplainabilityPanel xai={result.xai} />
+        </motion.div>
+      )}
     </section>
   );
 }

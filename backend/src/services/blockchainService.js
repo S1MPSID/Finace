@@ -31,7 +31,7 @@ export async function storeComplianceProof(payload) {
   const contractAddress = payload.contractAddress || deployment.address;
 
   return new Promise((resolve, reject) => {
-    const child = spawn(npmCommand, ["run", env.blockchainStoreScript, "--", "--contract", contractAddress], {
+    const child = spawn(npmCommand, ["run", env.blockchainStoreScript], {
       cwd: blockchainDir,
       env: {
         ...process.env,
@@ -43,6 +43,7 @@ export async function storeComplianceProof(payload) {
         CONTRACT_ADDRESS: contractAddress,
       },
       windowsHide: true,
+      shell: process.platform === "win32",
     });
 
     let stdout = "";

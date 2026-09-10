@@ -32,9 +32,13 @@ data/
 .cache/
 huggingface/
 RBI DOCS/
+!backend/public/docs/
 
 # VS Code
 .vscode/
 
 # Logs
 *.log
+
+# Server deploy scripts (kept local only)
+deploy/

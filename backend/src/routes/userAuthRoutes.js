@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { User } from "../models/User.js";
 import { signToken } from "../utils/jwtHelper.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { requireAuth } from "../middlewares/requireEvaluatorAuth.js";
 
 const router = Router();
 
@@ -88,6 +89,53 @@ router.post(
         name: user.username,
         company_name: user.company_name,
         role: user.role,
+      },
+    });
+  })
+);
+
+// GET /api/v1/auth/me — restore session from Bearer token
+router.get(
+  "/me",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const payload = req.user || {};
+
+    if (payload.role === "evaluator") {
+      return res.json({
+        ok: true,
+        user: {
+          id: payload.evaluator_id || payload.id,
+          name: payload.name || payload.email || "Evaluator",
+          email: payload.email,
+          role: "evaluator",
+        },
+      });
+    }
+
+    const userId = payload.user_id || payload.id;
+    if (userId) {
+      const user = await User.findOne({ user_id: userId }).lean();
+      if (user) {
+        return res.json({
+          ok: true,
+          user: {
+            id: user.user_id,
+            name: user.username,
+            company_name: user.company_name,
+            role: user.role || "user",
+          },
+        });
+      }
+    }
+
+    return res.json({
+      ok: true,
+      user: {
+        id: userId || "unknown",
+        name: payload.username || payload.name || "User",
+        company_name: payload.company_name,
+        role: payload.role || "user",
       },
     });
   })

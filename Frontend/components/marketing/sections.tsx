@@ -1,5 +1,37 @@
-import { capabilities, workflowSteps } from "@/lib/data";
+const capabilities = [
+  {
+    title: "Live Regulatory Tracking",
+    description: "Monitor RBI, FATF, SEBI, and policy notices in one place with visible version history.",
+  },
+  {
+    title: "Workflow Risk Detection",
+    description: "Submit product flows and surface likely compliance issues before launch or audit review.",
+  },
+  {
+    title: "Explainable Compliance",
+    description: "Every risk includes the legal clause, plain-language explanation, and why it matters.",
+  },
+  {
+    title: "Legal Document Studio",
+    description: "Generate first-pass Privacy Policy and Terms of Service drafts from product details.",
+  },
+  {
+    title: "Immutable Audit Trail",
+    description: "Record compliance checks, timestamps, and blockchain proofs for future verification.",
+  },
+  {
+    title: "Regulator Review Layer",
+    description: "Give auditors a separate review surface to validate AI findings and leave comments.",
+  },
+];
 
+const workflowSteps = [
+  "Ingest and update regulatory sources",
+  "Embed and organize the knowledge base",
+  "Analyze startup workflows with RAG",
+  "Explain risks with clause references",
+  "Store proofs and export compliance reports",
+];
 export function ProblemSection() {
   return (
     <section className="bg-mist py-20 text-slate-900">

@@ -1,0 +1,9 @@
+{
+  "network": "base-sepolia",
+  "chain_id": 84532,
+  "contract_name": "ComplianceAudit",
+  "address": "0xF1FB4e26CdeF0927dD8AC9e6633fFdFe42EFc150",
+  "abi_file": "Blockchain\\deployments\\ComplianceAudit.base-sepolia.abi.json",
+  "artifact_file": "Blockchain\\artifacts\\contracts\\Compliance.sol\\ComplianceAudit.json",
+  "deployed_at": "2026-04-29T17:55:51.5299936+05:30"
+}

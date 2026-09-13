@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Instrument_Sans, Manrope } from "next/font/google";
 
+import { StoreProvider } from "@/components/providers/StoreProvider";
+import { AuthHydrator } from "@/components/dashboard/auth-hydrator";
+import { ChatSessionsHydrator } from "@/components/dashboard/chat-sessions-hydrator";
 import "./globals.css";
 
 const heading = Instrument_Sans({
@@ -28,7 +31,11 @@ export default function RootLayout({
       <body
         className={`${heading.variable} ${body.variable} bg-ink font-[var(--font-body)] text-white antialiased`}
       >
-        {children}
+        <StoreProvider>
+          <AuthHydrator />
+          <ChatSessionsHydrator />
+          {children}
+        </StoreProvider>
       </body>
     </html>
   );

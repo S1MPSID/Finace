@@ -1,0 +1,48 @@
+{
+  "call_type": "new_report",
+  "risk_level": "MEDIUM",
+  "risk_flags": [
+    "Non-adherence to NPCI guidelines",
+    "Inadequate complaint handling and resolution process"
+  ],
+  "applicable_clauses": [
+    {
+      "title": "Annexure B",
+      "text": "NPCI/ UPI/( OC- 99/ 2020- 21 12\" January, 2021 To, All Members participating in various NPCI Products Madam/ Dear Sir, Sub: Adherence to NPCI quidelines by members/ participants NPCI, an umbrella organization for retail payments system, has the responsibility to oversee the adherence to various guidelines of NPCI by the members/ participants for all NPC! Products. Itis also in the interest of the eco- system that the members/ participants observe the rules and regulations set by NPC through Procedural Guidelines( PG) and Operating Circulars( OC) to ensure that the eco- system runs on the same standards and principles of integrity and credibility. With the continuous evolution and increased pace of development of payment landscape in the country including the participants leveraging the technological developments, and also the requirement to ensure safe, secure and efficient payment systems, it is incumbent on all participants to ensure strict adherence of the various NPC} guidelines. NPCI shall ensure that the members/ participants are adhering to PGs and OCs of all products of NPCI. Though such activity are presently monitored/ tracked at our end and raised to participant concerne",
+      "source": "aeps-product-compliance-001-fy-22-23-circular-on-launch-of-self-attestation-for-fy-22-23"
+    },
+    {
+      "title": "4. Adherence to complete the compliance self-attestation within timelines as per each",
+      "text": "quarterly update. Keeping in mind the user experience and faster resolution, NPCI has introduced\u2018 The Admin\u2019 Access to each Member( Single User). This access will help create/ update/ modify maker& checker user id for your bank. This initiative will now reduce the time taken for creation of user id\u2019 s. Please refer( Annexure A) for user guide. The Admin will have access to below functionality. i) Create New user ii) Update existing user iit) Activate/ Inactivate existing user iv) Reset Password v) Unlock user id vi) Assign Products to respective users Please noie any non- adherence to completion of self- attestation process and non- compliance observed will be liable for proper remedial actions and may further lead to penal actions by Surveillance and Enforcement Team( S& E&) as per Circular no\u201c NPCI/ UPI/ OC- 99/ 2020- 21\u201d( Annexure B) and Circular no\u201c NPCI/ UPI/ OC- 103/ 2020- 21( Annexure C). Please make a note of the contents herein and disseminate the information contained herein to the official concerned. Yours Truly, SD/- Kunal Kalawatia Chief of Product bia ae 4",
+      "source": "aeps-product-compliance-001-fy-22-23-circular-on-launch-of-self-attestation-for-fy-22-23"
+    },
+    {
+      "title": "2. Acquirer/Beneficiary Bank",
+      "text": "a. To connect their switch application from which status of AEPS transaction can be ascertained and responded with on receipt of API request from UDIR. b. System connected to UDIR to have real time transaction data so that it can respond to the request received from UDIR, immediately after completion of transaction. c. To make necessary changes in reconciliation and dispute handling process at Bank end. d. To allow registration of complaint( Dispute) and checking status of transaction/ complaint through BC/ CSP/ Agent point using UDIR API- Acquirer\u2019 s internal system( which is connected to BC) to connect with UDIR for customer transacting on any BC/ CSP/ Agent terminal of the( same) Acquirer. The list of APIs and other important points are given in Annexure A Members can refer latest version of Technical Specification Document( TSD) for implementation. All members should have it implemented in their DR setup too, for giving seamless services to the end customers. You may please make a note of the above and disseminate the information contained herein to all the officials concerned. Yours sincerely, SD/- Kunal Kalawatia Chief Products P a g e 2| 4",
+      "source": "aeps-aeps-oc-84-fy-23-24-udir-enhancing-complaint-handling-and-resolution-process-for-aeps-transactions"
+    },
+    {
+      "title": "2. Reconciliation and Dispute Management:",
+      "text": "a) Dispute/ adjustment shall be raised directly in the ARCS( back office) system for transactions based on the complaint received through API of UDIR and response receive from Acquirer/ Beneficiary. b) UDIR shall help resolve customer complaints in the following ways: i. Generating online reversal for the transaction based on response from Acquirer/ Beneficiary Bank( if it\u2019 s within the reversal time period). ii. Raising credit adjustment for transactions failed at Acquirer Bank end and where reversal is not possible. iii. Raising chargeback( CB) for transactions. c) Issuer/ Remitter Banks can also have their Mobile Banking and Internet Banking systems directly connected to UDIR for checking the status of the transaction/ dispute as well as raise disputes( complaints). d) Whenever the Bank raises a ReqComplaint request to UDIR, it is assumed that the request is for NPCI to raise a dispute( chargeback) on their behalf, based on the status of the transaction. e) Customer complaints related to the below scenarios will be addressed by UDIR: Transaction Type Particulars Flag Code Cash Withdrawal Cash not received B NA Fund Transfer Remitter account debited but Beneficiary A/ c not credi",
+      "source": "aeps-aeps-oc-84-fy-23-24-udir-enhancing-complaint-handling-and-resolution-process-for-aeps-transactions"
+    },
+    {
+      "title": "(NPCI)",
+      "text": "Beneficiary( Issuer) 6 ReqChkTxn Advice Initiated by NPCI to Issuer for Cash deposit transactions AePS Switch",
+      "source": "aeps-aeps-oc-84-fy-23-24-udir-enhancing-complaint-handling-and-resolution-process-for-aeps-transactions"
+    }
+  ],
+  "explanation": "The provided workflow involves wallet onboarding and UPI payments, which are subject to NPCI guidelines. The regulatory context highlights the importance of adhering to these guidelines and the need for a self-attestation process. Additionally, the complaint handling and resolution process for AePS transactions is outlined, emphasizing the need for members to implement the required APIs and connect their systems to UDIR.",
+  "recommendations": [
+    "Ensure adherence to NPCI guidelines and self-attestation process",
+    "Implement required APIs and connect systems to UDIR for complaint handling and resolution"
+  ],
+  "compliance_score": 60,
+  "reasoning_steps": [
+    "Identified key compliance risks related to NPCI guidelines and complaint handling",
+    "Analyzed regulatory context to determine applicable clauses and requirements",
+    "Assessed the provided workflow against these requirements to determine risk level and compliance score"
+  ],
+  "superseded_references": [],
+  "superseded_change_notes": []
+}

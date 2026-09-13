@@ -5,6 +5,8 @@ PDF text extractor with 3-tier fallback:
   3. pytesseract OCR — for scanned/image-only PDFs
 """
 from __future__ import annotations
+import os
+import shutil
 from pathlib import Path
 from dataclasses import dataclass
 from loguru import logger
@@ -107,6 +109,16 @@ def _parse_with_ocr(pdf_path: Path) -> ParsedDocument:
         import pytesseract
         from PIL import Image
         import io
+
+        if not shutil.which("tesseract"):
+            for candidate in (
+                os.getenv("TESSERACT_CMD", ""),
+                r"C:\Program Files\Tesseract-OCR\tesseract.exe",
+                r"C:\Program Files (x86)\Tesseract-OCR\tesseract.exe",
+            ):
+                if candidate and Path(candidate).exists():
+                    pytesseract.pytesseract.tesseract_cmd = candidate
+                    break
 
         doc = fitz.open(str(pdf_path))
         pages = []

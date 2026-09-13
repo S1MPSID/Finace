@@ -1,4 +1,5 @@
-RBI DOCS/
+# Node modules
+node_modules/
 
 # Python
 __pycache__/
@@ -11,18 +12,33 @@ env/
 dist/
 build/
 
-# Env / secrets
-python-rag/.env
+# Env / secrets (IMPORTANT)
+**/.env
+**/.env.local
+**/.env.*.local
 .env
+.env.local
 
-# Data (large generated files)
-data/parsed/
-data/chunks/
-data/reports/
+# Documentation / Markdown files (User requested)
+*.md
+!README.md
 
-# ML model cache
+# OS files
+.DS_Store
+Thumbs.db
+
+# Data / Cache
+data/
 .cache/
 huggingface/
+RBI DOCS/
+!backend/public/docs/
+
+# VS Code
+.vscode/
 
 # Logs
 *.log
+
+# Server deploy scripts (kept local only)
+deploy/

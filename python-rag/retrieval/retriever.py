@@ -18,6 +18,7 @@ from loguru import logger
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+from config import settings
 from db.mongo import chunks as chunks_col
 from embeddings.embedder import Embedder
 from retrieval.reranker import rerank_hits
@@ -25,8 +26,7 @@ from retrieval.reranker import rerank_hits
 
 class LocalRetriever:
     def __init__(self, embedder: Embedder | None = None):
-        # Retrieval should be fast and deterministic; use cached local model files.
-        self.embedder = embedder or Embedder(local_files_only=True)
+        self.embedder = embedder or Embedder()
 
     def _build_filter(
         self,
@@ -44,6 +44,7 @@ class LocalRetriever:
         return query
 
     def _load_candidates(self, mongo_filter: dict[str, Any]) -> tuple[list[dict], np.ndarray]:
+        limit = max(50, int(settings.retrieval_max_candidates))
         rows = list(
             chunks_col().find(
                 mongo_filter,
@@ -57,7 +58,7 @@ class LocalRetriever:
                     "metadata": 1,
                     "embedding": 1,
                 },
-            )
+            ).limit(limit)
         )
         if not rows:
             return [], np.empty((0, 0), dtype=np.float32)

@@ -1,0 +1,23 @@
+services:
+  python-rag:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finace-python-rag
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8000}:${PORT:-8000}"
+    env_file:
+      - .env
+    environment:
+      PORT: ${PORT:-8000}
+      DATA_DIR: /app/data
+      EMBEDDING_BACKEND: fastembed
+      RAG_LIGHT_XAI: "1"
+      RETRIEVAL_MAX_CANDIDATES: "300"
+      WARM_EMBEDDER: "1"
+    volumes:
+      - rag_data:/app/data
+
+volumes:
+  rag_data:

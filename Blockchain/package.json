@@ -10,7 +10,9 @@
     "test:localhost": "hardhat test --network localhost",
     "ganache:start": "ganache --wallet.totalAccounts 10 --wallet.defaultBalance 1000 --chain.chainId 1337 --server.host 127.0.0.1 --server.port 8545",
     "deploy:ganache": "hardhat run --network ganache scripts/deployCompliance.ts",
-    "deploy:localhost": "hardhat run --network localhost scripts/deployCompliance.ts"
+    "deploy:localhost": "hardhat run --network localhost scripts/deployCompliance.ts",
+    "deploy:base-sepolia": "hardhat run --network baseSepolia scripts/deployCompliance.ts",
+    "store-proof:base-sepolia": "hardhat run --network baseSepolia scripts/storeComplianceProof.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-mocha-ethers": "3.0.0",
@@ -18,12 +20,13 @@
     "@types/chai-as-promised": "^8.0.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.19.15",
-    "chai": "^6.2.2",
+    "chai": "^5.2.0",
     "ethers": "^6.16.0",
     "forge-std": "github:foundry-rs/forge-std#v1.9.4",
     "ganache": "^7.9.2",
-    "hardhat": "3.3.0",
+    "hardhat": "^3.4.0",
     "mocha": "^11.7.5",
+    "dotenv": "^16.6.1",
     "typescript": "~5.8.0"
   }
 }

@@ -2,6 +2,9 @@
 
 This project contains the `ComplianceAudit` smart contract and a Hardhat 3 test setup using `mocha` + `ethers`.
 
+Deployed on **Base Sepolia**: `0xF1FB4e26CdeF0927dD8AC9e6633fFdFe42EFc150`  
+See also root [blockchain.md](../blockchain.md) and [SESSION_HISTORY.md](../SESSION_HISTORY.md).
+
 ## Requirements
 
 - Node.js 20+

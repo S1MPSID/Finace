@@ -1,0 +1,24 @@
+{
+  "answer": "This workflow introduces high-risk exposure because onboarding spans India and the UAE while customer due diligence, travel rule handling, and enhanced monitoring controls are not fully described.",
+  "riskLevel": "HIGH",
+  "riskFlags": [
+    "Enhanced due diligence requirements are missing for higher-risk users.",
+    "Cross-border monitoring controls are not defined."
+  ],
+  "recommendations": [
+    "Add enhanced due diligence for higher-risk customer segments.",
+    "Document travel rule and sanctions screening controls before launch."
+  ],
+  "reasoningSteps": [
+    "Mapped the workflow to cross-border onboarding obligations.",
+    "Checked whether the workflow described KYC and monitoring controls."
+  ],
+  "citations": [
+    {
+      "title": "KYC Direction",
+      "source": "RBI-KYC-2024-01",
+      "text": "Regulated entities must apply stronger due diligence to higher-risk relationships."
+    }
+  ],
+  "callType": "general_query"
+}

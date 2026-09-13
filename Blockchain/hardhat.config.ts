@@ -1,39 +1,10 @@
+import "dotenv/config";
+import "@nomicfoundation/hardhat-toolbox-mocha-ethers";
 import type { HardhatUserConfig } from "hardhat/config";
 
-import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
-import { configVariable } from "hardhat/config";
-
 const config: HardhatUserConfig = {
-  plugins: [hardhatToolboxMochaEthersPlugin],
-  solidity: {
-    profiles: {
-      default: {
-        version: "0.8.28",
-        settings: {
-          evmVersion: "paris",
-        },
-      },
-      production: {
-        version: "0.8.28",
-        settings: {
-          evmVersion: "paris",
-          optimizer: {
-            enabled: true,
-            runs: 200,
-          },
-        },
-      },
-    },
-  },
+  solidity: "0.8.28",
   networks: {
-    hardhatMainnet: {
-      type: "edr-simulated",
-      chainType: "l1",
-    },
-    hardhatOp: {
-      type: "edr-simulated",
-      chainType: "op",
-    },
     localhost: {
       type: "http",
       chainType: "l1",
@@ -44,11 +15,11 @@ const config: HardhatUserConfig = {
       chainType: "l1",
       url: "http://127.0.0.1:8545",
     },
-    sepolia: {
+    baseSepolia: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
+      url: "https://base-sepolia.infura.io/v3/e89118953dec43dba953b54a30da35a3",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY.trim()] : [],
     },
   },
 };

@@ -1,10 +1,136 @@
 import { ACCENT_HEX } from "@/lib/theme/colors";
-import { CONTROL_KEYS, RISK_COLORS, type TrustAnalytics, type TrustChatMessage } from "./types";
+import {
+  CONTROL_KEYS,
+  RISK_COLORS,
+  type OfficialAnalytics,
+  type RequirementRow,
+  type RuleCheckRow,
+  type ScoreBreakdownRow,
+  type SemanticItem,
+  type TrajectoryPoint,
+  type TrustAnalytics,
+  type TrustChatMessage,
+} from "./types";
 
 export function trustBand(score: number) {
-  if (score >= 80) return { label: "High trust", tone: "text-emerald-300 border-emerald-400/30 bg-emerald-500/10" };
-  if (score >= 60) return { label: "Moderate trust", tone: "text-amber-300 border-amber-400/30 bg-amber-500/10" };
-  return { label: "Building trust", tone: "text-rose-300 border-rose-400/30 bg-rose-500/10" };
+  if (score >= 80) return { label: "High compliance", tone: "text-emerald-300 border-emerald-400/30 bg-emerald-500/10" };
+  if (score >= 60) return { label: "Moderate compliance", tone: "text-amber-300 border-amber-400/30 bg-amber-500/10" };
+  return { label: "Building compliance", tone: "text-rose-300 border-rose-400/30 bg-rose-500/10" };
+}
+
+function _num(v: unknown, fallback = 0): number {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function _buildWaterfallFromBreakdown(breakdown: ScoreBreakdownRow[]): ScoreBreakdownRow[] {
+  return breakdown.map((row) => ({
+    ...row,
+    label: row.label || row.feature,
+    contribution: _num(row.contribution, row.shap_value ?? 0),
+  }));
+}
+
+function _buildRequirements(
+  breakdown: ScoreBreakdownRow[],
+  semanticItems: SemanticItem[]
+): RequirementRow[] {
+  const byReqId = new Map<string, RequirementRow>();
+
+  for (const item of semanticItems) {
+    const id = item.requirement_id || item.category || "";
+    if (!id) continue;
+    const existing = byReqId.get(id);
+    if (existing) continue;
+    byReqId.set(id, {
+      id,
+      requirement: item.display_name || item.label || id,
+      status: (item.status || "UNKNOWN") as RequirementRow["status"],
+      confidence: _num(item.confidence),
+      penalty: _num(item.penalty_points),
+      contribution: 0,
+      modelSource: item.model_source || "heuristic",
+    });
+  }
+
+  for (const row of breakdown) {
+    if (!row.feature.startsWith("semantic:")) continue;
+    const reqId = row.feature.replace("semantic:", "");
+    const existing = byReqId.get(reqId);
+    if (existing) {
+      existing.contribution = _num(row.contribution, row.shap_value ?? 0);
+    } else {
+      byReqId.set(reqId, {
+        id: reqId,
+        requirement: row.label || reqId,
+        status: (row.status || "UNKNOWN") as RequirementRow["status"],
+        confidence: _num(row.confidence),
+        penalty: Math.abs(_num(row.contribution, row.shap_value ?? 0)),
+        contribution: _num(row.contribution, row.shap_value ?? 0),
+        modelSource: row.model_source || "ml",
+      });
+    }
+  }
+
+  return Array.from(byReqId.values()).sort(
+    (a, b) => a.contribution - b.contribution
+  );
+}
+
+function _buildRuleChecks(breakdown: ScoreBreakdownRow[]): RuleCheckRow[] {
+  return breakdown
+    .filter((row) => row.feature.startsWith("rule:"))
+    .map((row) => ({
+      id: row.feature.replace("rule:", ""),
+      label: row.label || row.feature,
+      contribution: _num(row.contribution, row.shap_value ?? 0),
+      riskLevel: row.risk_level || "MEDIUM",
+    }))
+    .sort((a, b) => a.contribution - b.contribution);
+}
+
+export function buildOfficialAnalytics(messages: TrustChatMessage[]): OfficialAnalytics {
+  const aiTurns = messages.filter((m) => m.role === "ai" && m.data);
+
+  const trajectory: TrajectoryPoint[] = aiTurns.map((m, i) => {
+    const xai = m.data?.xai || {};
+    const score = _num(m.data?.compliance_score ?? xai.observed_score);
+    const baseline = _num(xai.baseline_score);
+    return { turn: `T${i + 1}`, score, baseline };
+  });
+
+  const latest = aiTurns[aiTurns.length - 1];
+  const latestXai = latest?.data?.xai || {};
+  const breakdownRaw: ScoreBreakdownRow[] = latestXai.score_breakdown || [];
+  const breakdown = _buildWaterfallFromBreakdown(breakdownRaw);
+  const semanticItems: SemanticItem[] = latestXai.semantic_evaluation || [];
+  const requirements = _buildRequirements(breakdown, semanticItems);
+  const ruleChecks = _buildRuleChecks(breakdown);
+  const ragEvidence = (latest?.sources || []).map((s: any) => ({
+    documentId: s.document_id || "",
+    section: s.section || "",
+    text: s.text || "",
+    relativePath: s.relative_path || "",
+    sourceFile: s.source_file || "",
+  }));
+  const latestLimeFeatures = (latestXai.lime?.features || []).slice(0, 8);
+
+  const officialScore = latest ? _num(latestXai.observed_score ?? latest.data?.compliance_score) : null;
+  const baselineScore = latest ? _num(latestXai.baseline_score) : null;
+
+  return {
+    turns: aiTurns.length,
+    officialScore,
+    baselineScore,
+    delta: officialScore != null && baselineScore != null ? Math.round((officialScore - baselineScore) * 10) / 10 : 0,
+    trajectory,
+    waterfall: breakdown,
+    requirements,
+    ruleChecks,
+    semanticItems,
+    ragEvidence,
+    latestLimeFeatures,
+  };
 }
 
 export function buildTrustAnalytics(messages: TrustChatMessage[]): TrustAnalytics {

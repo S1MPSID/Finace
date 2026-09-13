@@ -15,11 +15,24 @@ def _match_any(patterns: list[str], text: str) -> bool:
     return any(re.search(p, text, flags=re.IGNORECASE) for p in patterns)
 
 
-def evaluate_rules(workflow_text: str) -> dict:
+def _rule_applies(rule: dict, active_categories: list[str] | None) -> bool:
+    cats = rule.get("categories") or []
+    if not cats:
+        return True
+    active = {c.strip().upper() for c in (active_categories or []) if c}
+    if not active:
+        active = {"GENERAL"}
+    allowed = {c.upper() for c in cats}
+    return bool(active & allowed)
+
+
+def evaluate_rules(workflow_text: str, active_categories: list[str] | None = None) -> dict:
     text = workflow_text or ""
     triggered: list[dict] = []
 
     for rule in RULES:
+        if not _rule_applies(rule, active_categories):
+            continue
         if not _match_any(rule.get("patterns", []), text):
             continue
 

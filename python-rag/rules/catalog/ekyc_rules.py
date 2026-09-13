@@ -1,0 +1,58 @@
+_EKYC = ["EKYC", "GENERAL"]
+
+EKYC_RULES: list[dict] = [
+    {
+        "rule_id": "R_EKYC_001_OFFLINE_ONLY",
+        "name": "e-KYC / Video KYC Gap",
+        "risk_level": "MEDIUM",
+        "categories": _EKYC,
+        "patterns": [r"\b(no|without)\s+(video\s+kyc|ekyc|e-kyc)\b", r"\bonly\s+paper\s+kyc\b"],
+        "requires_any": [r"\bvideo\s+kyc\b", r"\be-?kyc\b", r"\baadhaar\s+otp\b", r"\bckyc\b"],
+        "flag": "Digital KYC / CKYC not described",
+        "recommendation": "Use RBI-permitted e-KYC / video KYC and CKYC registry where applicable.",
+    },
+    {
+        "rule_id": "R_EKYC_002_AADHAAR_STORAGE",
+        "name": "Aadhaar Storage / Masking Gap",
+        "risk_level": "HIGH",
+        "categories": _EKYC,
+        "patterns": [
+            r"\bstore\s+full\s+aadhaar\b",
+            r"\bunmasked\s+aadhaar\b",
+            r"\baadhaar\b.*\b(no|without)\s+masking\b",
+        ],
+        "requires_any": [r"\bmasked\s+aadhaar\b", r"\buidai\b", r"\bvirtual\s+id\b", r"\bvid\b"],
+        "flag": "Aadhaar handling may violate storage/masking norms",
+        "recommendation": "Mask Aadhaar, avoid prohibited storage, use VID where possible.",
+    },
+    {
+        "rule_id": "R_EKYC_003_NO_REKYC",
+        "name": "Periodic Re-KYC Not Described",
+        "risk_level": "LOW",
+        "categories": _EKYC,
+        "patterns": [r"\b(no|never)\s+re[- ]?kyc\b", r"\bwithout\s+periodic\s+kyc\b"],
+        "requires_any": [r"\bre[- ]?kyc\b", r"\bperiodic\s+kyc\b", r"\bkyc\s+refresh\b"],
+        "flag": "Periodic / risk-based re-KYC not described",
+        "recommendation": "Schedule re-KYC per RBI master direction on KYC.",
+    },
+    {
+        "rule_id": "R_EKYC_004_CKYC_NOT_USED",
+        "name": "CKYC Registry Not Used",
+        "risk_level": "LOW",
+        "categories": _EKYC,
+        "patterns": [r"\b(no|without)\s+ckyc\b", r"\bduplicate\s+kyc\b.*\bmanual\b"],
+        "requires_any": [r"\bckyc\b", r"\bcentral\s+kyc\b", r"\bregistry\s+download\b"],
+        "flag": "CKYC central registry not leveraged",
+        "recommendation": "Fetch/update KYC records via CKYCR.",
+    },
+    {
+        "rule_id": "R_EKYC_005_DIGILOCKER",
+        "name": "e-KYC Without Document Verification",
+        "risk_level": "MEDIUM",
+        "categories": _EKYC,
+        "patterns": [r"\bselfie\s+only\s+kyc\b", r"\b(no|without)\s+document\s+verification\b.*\bekyc\b"],
+        "requires_any": [r"\bdigilocker\b", r"\bocr\b.*\bverify\b", r"\boffline\s+ekyc\b"],
+        "flag": "e-KYC document verification weak",
+        "recommendation": "Verify documents via Digilocker/OVD per RBI KYC norms.",
+    },
+]

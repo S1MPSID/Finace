@@ -1,23 +1,34 @@
 import { motion } from "framer-motion";
 import { WORKFLOW_SUGGESTIONS } from "@/lib/workflow/constants";
+import type { ChatSessionConfig } from "@/lib/workflow/categories";
 import { WorkflowComposer } from "./WorkflowComposer";
 
 interface Props {
   input: string;
   loading: boolean;
   finalizing: boolean;
+  chatConfig: ChatSessionConfig;
   onInputChange: (value: string) => void;
   onSend: (text?: string) => void;
   onFinalize: () => void;
+  onShapEnabledChange: (enabled: boolean) => void;
+  onSemanticMlEnabledChange: (enabled: boolean) => void;
+  onCategoriesChange: (categories: string[]) => void;
+  settingsHint?: string | null;
 }
 
 export function WorkflowEmptyState({
   input,
   loading,
   finalizing,
+  chatConfig,
   onInputChange,
   onSend,
   onFinalize,
+  onShapEnabledChange,
+  onSemanticMlEnabledChange,
+  onCategoriesChange,
+  settingsHint,
 }: Props) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 pb-8 pt-16">
@@ -34,9 +45,14 @@ export function WorkflowEmptyState({
         loading={loading}
         finalizing={finalizing}
         hasMessages={false}
+        chatConfig={chatConfig}
         onInputChange={onInputChange}
         onSend={() => onSend()}
         onFinalize={onFinalize}
+        onShapEnabledChange={onShapEnabledChange}
+        onSemanticMlEnabledChange={onSemanticMlEnabledChange}
+        onCategoriesChange={onCategoriesChange}
+        settingsHint={settingsHint}
       />
 
       <div className="mt-6 flex max-w-3xl flex-wrap justify-center gap-2 px-4">

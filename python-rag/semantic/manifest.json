@@ -1,0 +1,77 @@
+{
+  "description": "Hand-curated, manually-reviewable labelled examples for the semantic compliance classifier. Add rows here to fix mis-classifications; labels: COMPLIANT / PARTIAL / MISSING / UNKNOWN.",
+  "examples": [
+    {
+      "category": "UPI",
+      "requirement": "A UPI provider must verify the customer identity (KYC) before allowing any merchant onboarding.",
+      "response": "We complete e-KYC for every merchant before they can accept UPI payments.",
+      "label": "COMPLIANT"
+    },
+    {
+      "category": "UPI",
+      "requirement": "UPI participants must operate a complaint handling process with defined resolution timelines and escalation.",
+      "response": "Customers can raise complaints through our support portal, get a tracking ID, and unresolved cases are escalated to the grievance officer.",
+      "label": "COMPLIANT"
+    },
+    {
+      "category": "UPI",
+      "requirement": "UPI participants must implement transaction monitoring and report unusual or suspicious activity.",
+      "response": "We do not monitor merchant transactions for suspicious patterns.",
+      "label": "MISSING"
+    },
+    {
+      "category": "UPI",
+      "requirement": "UPI participants must maintain a grievance redressal mechanism.",
+      "response": "We plan to introduce a grievance mechanism next year.",
+      "label": "PARTIAL"
+    },
+    {
+      "category": "CRYPTO_VA",
+      "requirement": "VDA service providers must apply AML/CFT screening and transaction monitoring.",
+      "response": "We support P2P crypto transfers without any KYC or AML checks.",
+      "label": "MISSING"
+    },
+    {
+      "category": "EKYC",
+      "requirement": "e-KYC must use Aadhaar OTP with explicit customer consent and a retention policy.",
+      "response": "We verify identity via Aadhaar OTP after capturing consent; records are purged at expiry.",
+      "label": "COMPLIANT"
+    },
+    {
+      "category": "FX_FEMA",
+      "requirement": "Providers handling foreign exchange must maintain FEMA compliance and lodge periodic returns.",
+      "response": "We offer FX conversion without any RBI reporting or FEMA checks.",
+      "label": "MISSING"
+    },
+    {
+      "category": "GENERAL",
+      "requirement": "Payment providers must report suspicious transactions to the regulator.",
+      "response": "Our marketing material discusses product pricing only.",
+      "label": "UNKNOWN"
+    },
+    {
+      "category": "NEFT_RTGS",
+      "requirement": "NEFT/RTGS participants must verify customers before account activation.",
+      "response": "We open accounts without any identity verification step.",
+      "label": "MISSING"
+    },
+    {
+      "category": "NEFT_RTGS",
+      "requirement": "NEFT/RTGS participants must verify customers before account activation.",
+      "response": "Verification is rolling out in Q3; until then we onboard directly.",
+      "label": "PARTIAL"
+    },
+    {
+      "category": "UPI",
+      "requirement": "UPI providers must secure transactions with two-factor authentication.",
+      "response": "Every UPI debit requires OTP plus the 6-digit PIN.",
+      "label": "COMPLIANT"
+    },
+    {
+      "category": "AEPS",
+      "requirement": "AEPS participants must authenticate with Aadhaar and meet device standards.",
+      "response": "AEPS cash withdrawal uses Aadhaar authentication on certified devices.",
+      "label": "COMPLIANT"
+    }
+  ]
+}

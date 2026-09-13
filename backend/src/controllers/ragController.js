@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { runGeneralQuery, runRegulationSearch } from "../services/ragService.js";
+import { resolveCalibrationFrozenForChat } from "../services/calibrationService.js";
 
 /**
  * Maps the complex RAG result into a clean format for the frontend chat.
@@ -64,17 +65,35 @@ async function toChatResponse(result) {
     riskLevel: analysis.risk_level || "LOW",
     riskFlags: analysis.risk_flags || [],
     recommendations: analysis.recommendations || [],
-    complianceScore: analysis.compliance_score || 0,
+    complianceScore:
+      analysis.compliance_score === null || analysis.compliance_score === undefined
+        ? undefined
+        : analysis.compliance_score,
     reasoningSteps: analysis.reasoning_steps || [],
-    xai: result?.xai || {},
+    xai: {
+      ...(result?.xai || {}),
+      semantic_evaluation: result?.semantic_evaluation || result?.xai?.semantic_evaluation || [],
+      score_breakdown: result?.score_breakdown || result?.xai?.score_breakdown || [],
+    },
     analysis,
     raw: analysis
   };
 }
 
+function getQueryUserId(req) {
+  return req.user?.user_id || req.user?.id || req.user?.sub || null;
+}
+
 export async function askGeneralQuery(req, res) {
   try {
-    const result = await runGeneralQuery(req.validated);
+    const { chatId, ...rest } = req.validated;
+    const userId = getQueryUserId(req);
+    const calibrationFrozen = await resolveCalibrationFrozenForChat(chatId, userId);
+    const result = await runGeneralQuery({
+      ...rest,
+      chatId,
+      calibrationFrozen,
+    });
     const response = await toChatResponse(result);
     res.json(response);
   } catch (error) {

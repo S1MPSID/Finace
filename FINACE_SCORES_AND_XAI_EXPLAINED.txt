@@ -1,0 +1,421 @@
+================================================================================
+FINACE — SCORES, SHAP/LIME, AND ANALYZE TAB (IN-DEPTH, CODE-ACCURATE)
+================================================================================
+>>> SUPERSEDED IN PARTS (2026): Official score + SHAP now use exact score_breakdown
+>>> from rules/scoring.py (47 regex rules in rules/catalog/). Prefer:
+>>> DISCUSSION_02_SHAP.md, RULES_CATALOG.md, SHAP_AND_SEMANTIC_TEST_PROMPTS.md,
+>>> PROJECT_WORK_COMPLETE.md. This file still helps on Analyze-tab legacy charts.
+================================================================================
+Written for: faculty discussion, self-study, and product decisions.
+Assumes zero prior ML background. Everything below maps to the real codebase
+(python-rag/rag/rag_pipeline.py, xai/explainer.py, Frontend/lib/trust/buildAnalytics.ts).
+
+================================================================================
+PART 0 — YOUR TEACHER’S CORE QUESTION (PLAIN ENGLISH)
+================================================================================
+
+The teacher is NOT mainly asking: “Does the text mention KYC?”
+
+They ARE asking:
+
+  1) What does a number like +2.7 or -1.13 MEAN? What is the unit? Min? Max?
+  2) Why THAT exact number (e.g. -1.13 and not -1.15)?
+  3) If I run the SAME prompt again, why do numbers change? What inference is valid?
+  4) Why do irrelevant features (e.g. FEMA for a UPI-only question) appear?
+  5) What should a user DO after seeing the graphs?
+  6) Are parameters chosen against a benchmark / research standard?
+  7) Analyze tab: what are those charts, and do they use std dev?
+
+Honest short answer for the viva:
+
+  • The BIG number on screen (e.g. 88/100) is NOT from SHAP/LIME.
+  • SHAP/LIME bars are contributions to a SEPARATE “surrogate” score model.
+  • Today the UI does NOT clearly say that → graphs feel random and misleading.
+  • The compliance score still starts from the LLM JSON field, then Python adjusts it.
+  • SHAP does NOT “check if the LLM is right”; it explains a simplified fake scorer.
+
+That gap between “what we show” and “what actually decides 88” is the real issue.
+
+================================================================================
+PART 1 — THREE DIFFERENT “SCORES” (DO NOT MIX THEM)
+================================================================================
+
+(1) OBSERVED COMPLIANCE SCORE (what user sees: 76, 88, 96)
+    Source pipeline:
+      Step A — LLM returns JSON with compliance_score (0–100), risk_level, text, etc.
+      Step B — Python function _merge_compliance_score() adjusts that integer.
+      Step C — Stored in MongoDB and shown in UI as xai.observed_score too.
+
+    This is the OFFICIAL product score.
+
+(2) SURROGATE SCORE (xai.surrogate_score)
+    Source: score_from_features() in xai/explainer.py ONLY.
+    A fixed formula on rules + keyword flags + retrieval stats.
+    NOT the same formula as _merge_compliance_score().
+    Used to generate SHAP/LIME inputs.
+
+(3) SHAP / LIME VALUES (+2.7, -1.13, etc.)
+    Source: explain_decision() → _explain_with_shap / _explain_with_lime.
+    They attribute changes in the SURROGATE score (2), not the LLM merge (1).
+
+    UI tooltip says “Impact: +2.27” but does NOT say:
+      “+2.27 points on the surrogate scale (0–100), not on the final 88.”
+
+Until the UI separates these three, faculty and users will think SHAP “explains 88”
+when it does not.
+
+================================================================================
+PART 2 — HOW 88 (OBSERVED SCORE) IS ACTUALLY CALCULATED
+================================================================================
+
+File: python-rag/rag/rag_pipeline.py
+
+Pipeline order:
+  1) evaluate_rules(user text)     → deterministic regex rules (R001–R004…)
+  2) retriever.search(query)       → top-k regulation chunks
+  3) LLM generate_json(prompt)     → ComplianceOutput JSON
+  4) _merge_compliance_score(llm_score, triggered_rules, improve_flag)
+  5) explain_decision(...)         → XAI (parallel story, does not change 88)
+
+--- Step 3: LLM score ---
+
+  • Model default: Gemini 2.5 Flash (configurable).
+  • Temperature: LLM_TEMPERATURE default 0.2 (config.py) → small but NON-ZERO
+    variation on repeated identical prompts.
+  • Prompt includes a scoring rubric (prompt_builder.py) telling the model how
+    to pick 0–100. So yes: the LLM proposes a number; it is not computed by
+    SHAP.
+
+  Teacher concern “LLM should not judge itself” is VALID at the architecture
+  level unless you present rules + merge as the authority and LLM as advisory.
+
+--- Step 4: _merge_compliance_score (EXACT MATH) ---
+
+  Let:
+    S = integer LLM compliance_score
+    H = count of triggered rules with risk_level HIGH
+    M = count of triggered rules with risk_level MEDIUM
+    improve = user asked to raise/remediate score (boolean)
+
+  Penalties per triggered rule:
+    if improve:
+      high_pen = 4 per HIGH rule
+      med_pen  = 2 per MEDIUM rule
+    else:
+      high_pen = 8 per HIGH rule
+      med_pen  = 4 per MEDIUM rule
+
+  If any rules triggered:
+      S = S - H * high_pen - M * med_pen
+  Else (no rules triggered):
+      if improve: S = max(S, 92)
+      elif S >= 75: S = max(S, 88)
+
+  If improve:
+      if H == 0: S = max(S, 90)
+      elif LLM score >= 85: S = max(S, 88)
+      elif LLM score >= 70: S = max(S, 80)
+
+  Final: clamp S to [0, 100].
+
+  EXAMPLE:
+    LLM says 92, one HIGH rule triggered, not improve:
+      S = 92 - 8 = 84
+
+    LLM says 70, two MEDIUM rules, not improve:
+      S = 70 - 2*4 = 62
+
+  So 88 is NEVER “random” from SHAP; it is LLM + this penalty table.
+  But it CAN vary run-to-run because LLM output varies (temperature + wording).
+
+================================================================================
+PART 3 — WHAT FEATURES EXIST (FIXED LIST, NOT DYNAMIC PER TOPIC)
+================================================================================
+
+File: xai/explainer.py — build_feature_spec() + extract_features()
+
+A) One binary feature per rule in rules_config.py:
+     rule:R001_NO_KYC, rule:R002_P2P_CRYPTO, rule:R003_CROSS_BORDER_NO_FEMA, …
+     Value 1 if rule triggered, else 0.
+
+B) Five keyword “control” flags (regex on workflow text):
+     has_kyc, has_aml, has_grievance, has_fema, has_2fa
+     Value 1 if pattern matches, else 0.
+
+C) Four retrieval / text features:
+     retrieval_hit_count   = min(num_hits/5, 1)
+     retrieval_top_score   = max similarity score from hits
+     retrieval_mean_score  = mean similarity
+     workflow_length_norm  = min(len(text)/1200, 1)
+
+WHY FEMA shows up on a UPI question:
+  • The feature list is STATIC for every query.
+  • If retrieval returns FX-related chunks OR text mentions “cross-border”, has_fema
+    or rule R003 may activate even when the user only cares about UPI.
+  • They are NOT “benchmark parameters” from RBI research papers — they are
+    engineering choices for a demo hybrid engine.
+
+Teacher ask: “Should parameters be dynamic?”
+  • Academically: topic-specific features would be more defensible.
+  • Current code: same vector for all call types (general_query, new_report, etc.).
+
+================================================================================
+PART 4 — SURROGATE SCORE FORMULA (WHERE SHAP/LIME POINT TO)
+================================================================================
+
+File: score_from_features() — deterministic, no LLM.
+
+Start: score = 82.0
+
+For each triggered rule id (value >= 0.5):
+  HIGH rule:   score -= 28
+  MEDIUM rule: score -= 14
+  LOW rule:    score -= 6   (if any)
+
+Control bonuses (if flag = 1):
+  has_kyc:        +8
+  has_aml:        +7
+  has_grievance:  +5
+  has_fema:       +6
+  has_2fa:        +4
+
+Retrieval:
+  score += retrieval_top_score  * 6
+  score += retrieval_mean_score   * 4
+  score += retrieval_hit_count    * 3   (already 0–1 scaled)
+
+If workflow_length_norm < 0.15: score -= 8
+
+Finally: clip to [0, 100].
+
+IMPORTANT: This is NOT the same as _merge_compliance_score().
+So surrogate_score and observed_score often differ — UI shows both in Analyze
+trajectory chart but not prominently on main chat card.
+
+Rough theoretical max surrogate (all controls on, great retrieval, no rules):
+  82 + 8+7+5+6+4 + 6+4+3 ≈ 118 → clipped to 100.
+
+Rough min (many HIGH rules, no controls):
+  Can go toward 0 after clip.
+
+================================================================================
+PART 5 — WHERE +2.7 AND -1.13 COME FROM (SHAP MATH)
+================================================================================
+
+Production EC2 often sets RAG_LIGHT_XAI=1 → simplified path (no heavy SHAP lib).
+
+--- Light mode (common on server) ---
+
+  1) Build neighbor points: x0 + Gaussian noise (400 samples), clip 0–1.
+  2) For each neighbor, compute surrogate score = score_from_features(neighbor).
+  3) Fit LOCAL weighted linear regression (LIME-style):
+       minimize weighted || y - (b0 + b·x) ||^2
+     coefficients b_i are “sensitivity” of surrogate score to feature i near x0.
+  4) SHAP approximation used in code:
+       shap_value_i ≈ b_i * (x0_i - mean_i)
+     where mean_i = average of feature i across neighbor cloud.
+
+  So +2.7 on “KYC controls present” means:
+    “Holding the linear model fixed, this feature’s deviation from its local
+     average pushes the SURROGATE score up by about 2.7 points.”
+
+  It is NOT:
+    • +2.7% of compliance
+    • +2.7 out of 100 on the final merged score
+    • A regulatory weight from RBI
+
+  Why -1.13 and not -1.15?
+    • Because b_i and (x0_i - mean_i) are real floats from regression.
+    • Different neighbor random seed, different Ridge alpha, or full vs light
+      path changes digits after the decimal.
+    • There is no universal “grid” of allowed values.
+
+--- Full mode (RAG_LIGHT_XAI=0, local dev) ---
+
+  • Ridge regression on neighbors, then shap.LinearExplainer OR coef*(x0-baseline).
+  • LIME uses LimeTabularExplainer with same predict_fn = score_from_features.
+
+Units of SHAP/LIME bar:
+  • Same as surrogate score: nominally “points on 0–100 surrogate scale.”
+  • Linear attributions approximately sum to (surrogate(x0) - surrogate(mean))
+    for linear explainer; not exact for nonlinear regions.
+
+Max/min per feature bar:
+  • No fixed cap like “max +8 for KYC.”
+  • Magnitude depends on local coefficient and whether feature is 0 or 1.
+  • For binary feature at 1: shap ≈ coef * (1 - mean); at 0: shap ≈ coef * (0-mean).
+
+================================================================================
+PART 6 — WILL NUMBERS CHANGE IF YOU REPEAT THE SAME PROMPT?
+================================================================================
+
+YES — several layers can change:
+
+| Layer              | Deterministic? | What changes on repeat              |
+|--------------------|----------------|-------------------------------------|
+| Rule engine        | Mostly YES     | Same text → same triggers           |
+| Retrieval          | Mostly YES     | Same query → usually same hits      |
+| LLM JSON score     | NO             | temperature 0.2, model sampling   |
+| Merge penalties    | YES given LLM  | Follows from LLM + rules            |
+| Surrogate score    | YES given feats| Same features → same surrogate      |
+| SHAP/LIME bars     | MOSTLY YES*    | *if features identical; light XAI |
+|                    |                | uses fixed seeds 42 and 7 for noise |
+
+So teacher observation is correct:
+  • Final 88 may shift (LLM).
+  • SHAP bars may shift slightly (regression noise / different observed_score fed
+    into labels in charts).
+  • If ONLY LLM changes but features identical, surrogate SHAP can look stable
+    while headline score moves → looks “broken” to users.
+
+================================================================================
+PART 7 — WHAT INFERENCE CAN YOU DRAW FROM GRAPHS TODAY? (HONEST)
+================================================================================
+
+VALID (if explained properly):
+  • “This rule fired” (binary) → see rule features active in feature_values.
+  • “Retrieval was weak/strong” → retrieval_* features.
+  • “Surrogate model thinks KYC language would raise a simplified score.”
+  • “Surrogate and observed score diverge → explanation model doesn’t match
+     decision policy” (fidelity issue).
+
+NOT VALID (current UI implies these):
+  • “+2.7 proves KYC caused 88.”
+  • “SHAP validated Gemini.”
+  • “FEMA bar means UPI product must do FEMA” (static feature list artifact).
+  • “Graph proves statistical significance” (no std dev / p-values in app).
+
+What user should do after graphs (product answer you can give faculty):
+  1) Read triggered RULES and risk flags (deterministic).
+  2) Read cited regulations (retrieval clauses).
+  3) Treat SHAP as secondary; if surrogate ≠ observed, trust rules + citations first.
+  4) Evaluator amends score with comment (human in the loop).
+  5) For remediation: update_report mode, not re-asking until wording changes.
+
+================================================================================
+PART 8 — ANALYZE TAB (TRUST DASHBOARD) — HOW METRICS ARE BUILT
+================================================================================
+
+File: Frontend/lib/trust/buildAnalytics.ts
+Data: chat messages with AI turns only (needs prior chat history).
+
+Charts:
+  • Score trajectory: observed compliance_score vs surrogate per turn (T1, T2…).
+  • Risk pie: count of HIGH/MEDIUM/LOW across turns.
+  • Latest SHAP drivers: copies latest turn’s shap.features (same +2.7 issue).
+  • Trust factors bar: Evidence, Fidelity, Controls, XAI, Progress (0–100 each).
+  • Control coverage: 0/1 per control keyword feature.
+  • Retrieval strength: scales feature_values to 0–100% display.
+
+Trust index (single headline number):
+  trustIndex = round(
+    0.22 * evidenceScore +
+    0.28 * fidelityScore +
+    0.18 * controlScore +
+    0.20 * transparencyScore +
+    0.12 * improvementScore
+  )
+
+Where:
+  evidenceScore  = f(avg number of source citations per turn)
+  fidelityScore  = f(|observed - surrogate| per turn) — closer = higher
+  controlScore   = % of 5 control flags ON in latest turn
+  transparencyScore = counts of drivers, SHAP features, reasoning_steps
+  improvementScore = 55 + (last_score - first_score) capped
+
+STD DEV:
+  • The application does NOT compute or display standard deviation on these graphs.
+  • If teacher asks “how metrics vary with std dev” — answer: they don’t in code;
+    neighbor sampling uses Gaussian noise (σ=0.35) internally for XAI only, not
+    shown in UI.
+
+“LLM calls 100%”:
+  • Not in current TrustChartGrid.tsx source; may be old UI, misread axis (100 on
+    Y-axis = score scale), or demo slide. Current factors are Evidence/Fidelity/etc.
+
+================================================================================
+PART 9 — GEMINI VS LLAMA 3 (SAME PROMPT IN APP VS ONLINE)
+================================================================================
+
+In Finace:
+  • Provider switch changes JSON text, score suggestion, risk wording.
+  • Rules + retrieval stay same if workflow text identical.
+  • Merge function same.
+  • XAI surrogate same if features identical.
+
+Differences you might see:
+  • compliance_score in JSON (LLM-dependent).
+  • explanation quality, clause selection.
+  • risk_flags wording.
+
+Online Gemini chat:
+  • No rule engine, no merge, no fixed SHAP feature vector, no Mongo report.
+  • Not comparable as “same system” — only same natural-language question.
+
+For a fair faculty experiment:
+  • Fix workflow text → record rules + retrieval hits → compare LLM JSON scores
+    across providers with temperature 0 → then discuss merge outcome.
+
+================================================================================
+PART 10 — IS THE CURRENT DESIGN “VERY BAD”? (BALANCED VERDICT)
+================================================================================
+
+Weak for viva / production trust:
+  • LLM proposes compliance_score (self-judgment concern).
+  • SHAP/LIME explain a different function than merge uses.
+  • Static features (FEMA/KYC flags) for all domains.
+  • UI lacks units, glossary, and “this bar ≠ final score.”
+  • Analyze trust index is a weighted heuristic, not peer-reviewed metric.
+
+Still usable as engineering prototype:
+  • Rules are deterministic and auditable.
+  • Retrieval citations are real chunks from corpus.
+  • Merge penalties are explicit code (teachable math in Part 2).
+  • Surrogate + fidelity chart can show WHEN explanations don’t match policy.
+
+================================================================================
+PART 11 — DIRECTIONS FOR DISCUSSION (NO CODE YET — OPTIONS)
+================================================================================
+
+Option A — Fix honesty in UI (minimal):
+  • Rename panel: “Surrogate drivers (simplified model).”
+  • Show: Observed 88 | Surrogate 76 | Δ = 12.
+  • Tooltip: “+2.7 ≈ points on surrogate 0–100 scale.”
+  • Hide features with |shap| < ε or inactive for topic.
+
+Option B — Fix authority (stronger for faculty):
+  • compliance_score = f(rules only) OR weighted rules + retrieval, LLM text only.
+  • LLM never outputs 0–100; only narrative + gaps.
+
+Option C — Dynamic features:
+  • UPI session → UPI/NPCI rule pack features only.
+  • Build feature vector from call_type + detected domain.
+
+Option D — Drop SHAP/LIME from main UI:
+  • Show: Rules table, citation list, merge breakdown, reasoning_steps.
+  • Keep one simple bar: “penalties applied: -8 for R001.”
+
+Option E — Analyze tab rewrite:
+  • Remove opaque trust index or document formula on screen.
+  • Charts: rule triggers over time, citation count, score delta from merge only.
+
+================================================================================
+PART 12 — CHEAT SHEET FOR VIVA (ONE PARAGRAPH)
+================================================================================
+
+“The displayed compliance score is produced by a hybrid pipeline: deterministic
+regex rules and RAG retrieval feed an LLM that returns a proposed 0–100 score;
+Python then applies fixed per-rule penalties in _merge_compliance_score. SHAP and
+LIME do not explain the LLM; they attribute changes in a separate surrogate
+function score_from_features built from rule triggers, keyword controls, and
+retrieval statistics. Values like +2.7 are local linear contributions on that
+surrogate scale, computed via weighted regression on noisy neighbors—not fixed
+constants and not directly additive to the final 88. Repeating the same prompt
+can change the LLM portion (temperature 0.2) and thus the final score, while SHAP
+may stay similar if features are unchanged— which is why we must label units and
+separate observed vs surrogate scores, or replace SHAP with rule-and-citation-first
+explanations for regulatory clarity.”
+
+================================================================================
+END OF DOCUMENT
+================================================================================

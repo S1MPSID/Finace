@@ -6,6 +6,8 @@ import { WorkflowComposer } from "@/components/workflow/WorkflowComposer";
 import { WorkflowEmptyState } from "@/components/workflow/WorkflowEmptyState";
 import { WorkflowMessageList } from "@/components/workflow/WorkflowMessageList";
 import { WorkflowModeToggle } from "@/components/workflow/WorkflowModeToggle";
+import { NewChatOnboardingModal } from "@/components/workflow/NewChatOnboardingModal";
+import { GeneralXaiPromptModal } from "@/components/workflow/GeneralXaiPromptModal";
 
 export default function WorkflowChatPage() {
   const chat = useWorkflowChat();
@@ -16,26 +18,46 @@ export default function WorkflowChatPage() {
       loading={chat.loading}
       finalizing={chat.finalizing}
       hasMessages={chat.messages.length > 0}
+      chatConfig={chat.chatConfig}
       onInputChange={chat.setInput}
       onSend={() => chat.handleSendMessage()}
       onFinalize={chat.handleFinalizeReport}
+      onShapEnabledChange={chat.setShapEnabled}
+      onSemanticMlEnabledChange={chat.setSemanticMlEnabled}
+      onCategoriesChange={chat.setSelectedCategories}
+      settingsHint={chat.settingsHint}
     />
   );
 
   return (
     <div className="relative flex h-full min-h-0 flex-col bg-transparent">
-      <WorkflowModeToggle mode={chat.studioMode} onChange={chat.setStudioMode} />
+      <GeneralXaiPromptModal
+        open={chat.showGeneralXaiPrompt}
+        onEnable={chat.completeGeneralXaiPrompt}
+        onDecline={chat.declineGeneralXaiPrompt}
+      />
 
-      {chat.studioMode === "analyze" ? (
+      {chat.showOnboarding ? (
+        <NewChatOnboardingModal open={chat.showOnboarding} onComplete={chat.completeOnboarding} />
+      ) : (
+        <>
+          <WorkflowModeToggle mode={chat.studioMode} onChange={chat.setStudioMode} />
+
+          {chat.studioMode === "analyze" ? (
         <AnalyzeTrustDashboard messages={chat.messages} />
       ) : chat.empty ? (
         <WorkflowEmptyState
           input={chat.input}
           loading={chat.loading}
           finalizing={chat.finalizing}
+          chatConfig={chat.chatConfig}
           onInputChange={chat.setInput}
           onSend={chat.handleSendMessage}
           onFinalize={chat.handleFinalizeReport}
+          onShapEnabledChange={chat.setShapEnabled}
+          onSemanticMlEnabledChange={chat.setSemanticMlEnabled}
+          onCategoriesChange={chat.setSelectedCategories}
+          settingsHint={chat.settingsHint}
         />
       ) : (
         <>
@@ -45,6 +67,8 @@ export default function WorkflowChatPage() {
             scrollRef={chat.scrollRef}
           />
           <div className="shrink-0 pb-4 pt-2">{composer}</div>
+        </>
+      )}
         </>
       )}
     </div>

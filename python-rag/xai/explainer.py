@@ -315,6 +315,10 @@ def _humanize_feature(name: str) -> str:
         "retrieval_mean_score": "Average regulation match strength",
         "workflow_length_norm": "Workflow detail completeness",
     }
+    if name.startswith("semantic:"):
+        return "Semantic control check"
+    if name == "retrieval_top_score":
+        return "Regulation match strength"
     return mapping.get(name, name)
 
 
@@ -324,21 +328,64 @@ def explain_decision(
     retrieval_hits: list[dict[str, Any]],
     final_score: int | float | None = None,
     final_risk: str | None = None,
+    score_breakdown: list[dict[str, Any]] | None = None,
+    baseline_score: float | None = None,
 ) -> dict[str, Any]:
     vector, spec, raw_values = extract_features(workflow_text, rules_out, retrieval_hits)
-    surrogate_score = score_from_features(vector, spec)
-    lime_items = _explain_with_lime(vector, spec)
-    shap_items = _explain_with_shap(vector, spec)
 
-    for item in lime_items:
-        item["label"] = _humanize_feature(item["feature"])
-        item["active"] = float(raw_values.get(item["feature"], 0.0)) >= 0.5
-    for item in shap_items:
-        item["label"] = _humanize_feature(item["feature"])
-        item["active"] = float(raw_values.get(item["feature"], 0.0)) >= 0.5
+    exact_breakdown = score_breakdown is not None
+    if exact_breakdown:
+        shap_items = [
+            {
+                "feature": row["feature"],
+                "shap_value": row.get("shap_value", row.get("contribution", 0.0)),
+                "direction": row.get("direction", "decreases_score"),
+                "label": row.get("label", row["feature"]),
+                "active": row.get("active", True),
+                "layer": row.get("layer"),
+                "status": row.get("status"),
+                "model_source": row.get("model_source"),
+            }
+            for row in score_breakdown
+        ]
+        lime_items = [
+            {
+                "feature": row["feature"],
+                "weight": row.get("shap_value", row.get("contribution", 0.0)),
+                "direction": row.get("direction", "decreases_score"),
+                "label": row.get("label", row["feature"]),
+                "active": row.get("active", True),
+            }
+            for row in score_breakdown
+        ]
+        anchor = float(baseline_score) if baseline_score is not None else float(final_score or 0)
+        observed = float(final_score) if final_score is not None else anchor + sum(
+            float(r.get("contribution", 0)) for r in score_breakdown
+        )
+        surrogate_score = observed
+    else:
+        surrogate_score = score_from_features(vector, spec)
+        lime_items = _explain_with_lime(vector, spec)
+        shap_items = _explain_with_shap(vector, spec)
+        observed = float(final_score) if final_score is not None else surrogate_score
 
-    top_drivers = []
-    for item in shap_items[:5]:
+    if not exact_breakdown:
+        for item in lime_items:
+            item["label"] = _humanize_feature(item["feature"])
+            item["active"] = float(raw_values.get(item["feature"], 0.0)) >= 0.5
+        for item in shap_items:
+            item["label"] = _humanize_feature(item["feature"])
+            item["active"] = float(raw_values.get(item["feature"], 0.0)) >= 0.5
+
+    shap_sorted = sorted(
+        shap_items,
+        key=lambda x: abs(float(x.get("shap_value", 0))),
+        reverse=True,
+    )
+
+    top_drivers: list[str] = []
+    seen_drivers: set[str] = set()
+    for item in shap_sorted[:12]:
         feature = item["feature"]
         active = item.get("active", False)
         shap_val = float(item["shap_value"])
@@ -346,32 +393,44 @@ def explain_decision(
         if feature.startswith("rule:"):
             if active:
                 verb = "lowered" if shap_val < 0 else "shifted"
-                top_drivers.append(
-                    f"Triggered rule “{label}” {verb} the score ({shap_val:+.2f})."
-                )
+                line = f"Triggered rule “{label}” {verb} the score ({shap_val:+.2f})."
             else:
-                top_drivers.append(
+                line = (
                     f"Rule “{label}” was not triggered"
                     f"{' — that supported the score' if shap_val > 0 else ''}"
                     f" ({shap_val:+.2f})."
                 )
+        elif feature.startswith("semantic:"):
+            status = item.get("status") or "check"
+            src = item.get("model_source") or "engine"
+            line = f"{label} — {status} ({src}) adjusted the score ({shap_val:+.2f})."
         elif feature.startswith("has_"):
             state = "present" if active else "absent"
             verb = "raised" if shap_val > 0 else "lowered"
-            top_drivers.append(
-                f"Control “{label}” is {state} and {verb} the score ({shap_val:+.2f})."
-            )
+            line = f"Control “{label}” is {state} and {verb} the score ({shap_val:+.2f})."
+        elif feature == "retrieval_top_score":
+            verb = "raised" if shap_val > 0 else "lowered"
+            line = f"Regulation match strength {verb} the score ({shap_val:+.2f})."
         else:
             verb = "raised" if shap_val > 0 else "lowered"
-            top_drivers.append(
-                f"{label} {verb} the compliance score ({shap_val:+.2f})."
-            )
+            line = f"{label} {verb} the compliance score ({shap_val:+.2f})."
+        if line not in seen_drivers:
+            seen_drivers.add(line)
+            top_drivers.append(line)
+        if len(top_drivers) >= 6:
+            break
 
+    method = "exact_rule_breakdown" if score_breakdown is not None else "hybrid_surrogate_shap_lime"
     return {
-        "method": "hybrid_surrogate_shap_lime",
+        "method": method,
         "target": "compliance_score",
-        "observed_score": float(final_score) if final_score is not None else round(surrogate_score, 2),
+        "baseline_score": round(
+            float(baseline_score) if baseline_score is not None else float(observed),
+            2,
+        ),
+        "observed_score": round(observed, 2),
         "surrogate_score": round(surrogate_score, 2),
+        "score_breakdown": score_breakdown or [],
         "observed_risk": final_risk or _risk_from_score(surrogate_score),
         "feature_values": {
             _humanize_feature(k): round(float(v), 4) for k, v in raw_values.items()
@@ -382,7 +441,7 @@ def explain_decision(
         },
         "shap": {
             "summary": "Feature attributions estimating each signal's contribution to the compliance score.",
-            "features": shap_items,
+            "features": shap_sorted[:12],
         },
         "top_drivers": top_drivers,
         "notes": [

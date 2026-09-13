@@ -144,7 +144,90 @@ export function buildTrustStats(messages = []) {
     latest_score: lastScore,
     latest_risk: scoreSeries[scoreSeries.length - 1]?.risk || null,
     computed_at: new Date().toISOString(),
+
+    // ── New: hybrid analyze fields ──
+    baseline_score: latest ? Number(latestXai.baseline_score ?? 0) : null,
+    official_score: lastScore,
+    delta_from_baseline: lastScore != null && latest
+      ? Math.round((Number(lastScore) - Number(latestXai.baseline_score ?? 0)) * 10) / 10
+      : 0,
+    trajectory: scoreSeries.map((r) => ({
+      turn: r.turn,
+      score: r.score,
+      baseline: latest ? Number(latestXai.baseline_score ?? 0) : 0,
+    })),
+    waterfall: (latestXai.score_breakdown || []).map((row) => ({
+      feature: row.feature,
+      label: row.label || row.feature,
+      contribution: Number(row.contribution ?? row.shap_value ?? 0),
+      shap_value: Number(row.shap_value ?? row.contribution ?? 0),
+      layer: row.layer || null,
+      status: row.status || null,
+      confidence: row.confidence != null ? Number(row.confidence) : null,
+      risk_level: row.risk_level || null,
+    })),
+    requirements: _buildRequirements(latestXai.score_breakdown || [], latestXai.semantic_evaluation || []),
+    rule_checks: (latestXai.score_breakdown || [])
+      .filter((row) => String(row.feature || "").startsWith("rule:"))
+      .map((row) => ({
+        id: String(row.feature).replace("rule:", ""),
+        label: row.label || row.feature,
+        contribution: Number(row.contribution ?? row.shap_value ?? 0),
+        risk_level: row.risk_level || "MEDIUM",
+      })),
+    semantic_items: (latestXai.semantic_evaluation || []).map((item) => ({
+      requirement_id: item.requirement_id || "",
+      category: item.category || "",
+      status: item.status || "UNKNOWN",
+      confidence: Number(item.confidence ?? 0),
+      penalty_points: Number(item.penalty_points ?? 0),
+      display_name: item.display_name || item.label || item.requirement_id || "",
+      model_source: item.model_source || "ml",
+    })),
+    rag_evidence: (latest?.sources || []).map((s) => ({
+      document_id: s.document_id || "",
+      section: s.section || "",
+      text: (s.text || "").slice(0, 500),
+      relative_path: s.relative_path || "",
+      source_file: s.source_file || "",
+    })),
   };
+}
+
+function _buildRequirements(breakdown, semanticItems) {
+  const byId = {};
+  for (const item of semanticItems) {
+    const id = item.requirement_id || item.category || "";
+    if (!id || byId[id]) continue;
+    byId[id] = {
+      id,
+      requirement: item.display_name || item.label || id,
+      status: item.status || "UNKNOWN",
+      confidence: Number(item.confidence ?? 0),
+      penalty: Number(item.penalty_points ?? 0),
+      contribution: 0,
+      model_source: item.model_source || "ml",
+    };
+  }
+  for (const row of breakdown) {
+    const feat = String(row.feature || "");
+    if (!feat.startsWith("semantic:")) continue;
+    const reqId = feat.replace("semantic:", "");
+    if (byId[reqId]) {
+      byId[reqId].contribution = Number(row.contribution ?? row.shap_value ?? 0);
+    } else {
+      byId[reqId] = {
+        id: reqId,
+        requirement: row.label || reqId,
+        status: row.status || "UNKNOWN",
+        confidence: Number(row.confidence ?? 0),
+        penalty: Math.abs(Number(row.contribution ?? row.shap_value ?? 0)),
+        contribution: Number(row.contribution ?? row.shap_value ?? 0),
+        model_source: row.model_source || "ml",
+      };
+    }
+  }
+  return Object.values(byId).sort((a, b) => a.contribution - b.contribution);
 }
 
 export function buildConversationSnapshots(messages = []) {

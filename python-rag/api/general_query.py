@@ -25,11 +25,20 @@ def main() -> None:
     parser.add_argument("--prompt", required=True, help="User prompt")
     parser.add_argument("--top-k", type=int, default=5, help="Retrieved chunks count")
     parser.add_argument("--regulator", default=None, help="Optional regulator filter")
-    parser.add_argument("--category", default=None, help="Optional category filter")
+    parser.add_argument("--category", default=None, help="Optional single category filter")
+    parser.add_argument(
+        "--active-categories",
+        default=None,
+        help="Comma-separated list of selected categories (e.g. UPI,EKYC)",
+    )
     args = parser.parse_args()
 
     warnings.filterwarnings("ignore")
     logger.remove()  # ensure stdout is JSON only
+
+    active_cats = None
+    if args.active_categories:
+        active_cats = [c.strip() for c in args.active_categories.split(",") if c.strip()]
 
     pipeline = RAGPipeline()
     result = pipeline.analyze(
@@ -38,6 +47,7 @@ def main() -> None:
         top_k=args.top_k,
         regulator=args.regulator,
         category=args.category,
+        active_categories=active_cats,
         status="active",
     )
     print(json.dumps(result, ensure_ascii=False))

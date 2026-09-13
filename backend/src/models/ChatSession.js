@@ -25,6 +25,18 @@ const chatSessionSchema = new mongoose.Schema(
     last_score: Number,
     trust_stats: { type: Object, default: {} },
     report_id: String,
+    chat_type: {
+      type: String,
+      enum: ["general_query", "new_report", "update_report"],
+      default: "general_query",
+    },
+    selected_categories: { type: [String], default: [] },
+    shap_enabled: { type: Boolean, default: false },
+    semantic_ml_enabled: { type: Boolean, default: false },
+    calibration_phi0_seed: Number,
+    calibration_phi0_live: Number,
+    calibration_phi0_blended: Number,
+    calibration_frozen_at: Date,
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

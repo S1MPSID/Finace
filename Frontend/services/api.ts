@@ -136,9 +136,25 @@ export const reportsApi = {
 export const chatHistoryApi = {
   list: () => api.get("/chats"),
   get: (id: string) => api.get(`/chats/${id}`),
-  create: (payload: { title?: string; messages?: any[] }) => api.post("/chats", payload),
-  save: (id: string, payload: { title?: string; messages?: any[] }) =>
-    api.put(`/chats/${id}`, payload),
+  create: (payload: {
+    title?: string;
+    messages?: any[];
+    chat_type?: string;
+    selected_categories?: string[];
+    shap_enabled?: boolean;
+    semantic_ml_enabled?: boolean;
+  }) => api.post("/chats", payload),
+  save: (
+    id: string,
+    payload: {
+      title?: string;
+      messages?: any[];
+      chat_type?: string;
+      selected_categories?: string[];
+      shap_enabled?: boolean;
+      semantic_ml_enabled?: boolean;
+    }
+  ) => api.put(`/chats/${id}`, payload),
   remove: (id: string) => api.delete(`/chats/${id}`),
 };
 
@@ -178,8 +194,21 @@ export interface RagQueryResponse {
 export const queryCompliance = async (payload: {
   prompt: string;
   topK?: number;
+  callType?: string;
+  activeCategories?: string[];
+  enableXai?: boolean;
+  enableSemanticMl?: boolean;
+  chatId?: string | null;
 }): Promise<RagQueryResponse> => {
-  return api.post("/rag/query", payload);
+  return api.post("/rag/query", {
+    prompt: payload.prompt,
+    topK: payload.topK,
+    call_type: payload.callType,
+    active_categories: payload.activeCategories,
+    enable_xai: payload.enableXai,
+    enable_semantic_ml: payload.enableSemanticMl,
+    chat_id: payload.chatId || undefined,
+  });
 };
 
 export default api;

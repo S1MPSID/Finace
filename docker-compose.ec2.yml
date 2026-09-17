@@ -1,6 +1,9 @@
 # EC2 — both services on one machine.
-# Env files on host: ~/.env (node)  ~/.env2 (python-rag)
+# Env files in repo root (same folder as this file):
+#   .env   → Node API
+#   .env2  → Python RAG
 #
+#   cd ~/Finace
 #   docker compose -f docker-compose.ec2.yml pull
 #   docker compose -f docker-compose.ec2.yml up -d
 
@@ -10,7 +13,7 @@ services:
     container_name: finace-python-rag
     restart: unless-stopped
     env_file:
-      - ${HOME}/.env2
+      - ./.env2
     environment:
       PORT: "8000"
       DATA_DIR: /app/data
@@ -28,7 +31,7 @@ services:
     container_name: finace-node-api
     restart: unless-stopped
     env_file:
-      - ${HOME}/.env
+      - ./.env
     environment:
       PORT: "5000"
       NODE_ENV: production

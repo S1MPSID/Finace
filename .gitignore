@@ -17,6 +17,7 @@ build/
 **/.env.local
 **/.env.*.local
 .env
+.env2
 .env.local
 
 # Documentation / Markdown files (User requested)

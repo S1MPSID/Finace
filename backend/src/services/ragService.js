@@ -13,7 +13,18 @@ export async function runGeneralQuery(input) {
   return runCliQuery(input);
 }
 
-async function runHttpQuery({ prompt, topK = 5, regulator = null, category = null }) {
+async function runHttpQuery({
+  prompt,
+  topK = 5,
+  regulator = null,
+  category = null,
+  callType = "general_query",
+  activeCategories = [],
+  enableXai = false,
+  enableSemanticMl = false,
+  calibrationFrozen = null,
+  chatId = null,
+}) {
   const maxChars = env.ragPromptMaxChars;
   const trimmedPrompt =
     prompt.length > maxChars ? prompt.slice(prompt.length - maxChars) : prompt;
@@ -25,12 +36,18 @@ async function runHttpQuery({ prompt, topK = 5, regulator = null, category = nul
       top_k: topK,
       regulator,
       category,
+      call_type: callType,
+      active_categories: activeCategories,
+      enable_xai: enableXai,
+      enable_semantic_ml: enableSemanticMl,
+      chat_id: chatId || undefined,
+      calibration_frozen: calibrationFrozen || undefined,
     },
     { timeoutMs: env.fastApiTimeoutMs }
   );
 }
 
-async function runCliQuery({ prompt, topK = 5, regulator = null, category = null }) {
+async function runCliQuery({ prompt, topK = 5, regulator = null, category = null, activeCategories = [] }) {
   return new Promise((resolve, reject) => {
     const py = resolvePythonCommand();
     const args = [
@@ -45,6 +62,9 @@ async function runCliQuery({ prompt, topK = 5, regulator = null, category = null
 
     if (regulator) args.push("--regulator", regulator);
     if (category) args.push("--category", category);
+    if (activeCategories && activeCategories.length > 0) {
+      args.push("--active-categories", activeCategories.join(","));
+    }
 
     const child = spawn(py.exe, args, {
       cwd: pythonRagDir,

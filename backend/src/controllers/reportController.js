@@ -7,6 +7,7 @@ import { postJson } from "../services/httpClient.js";
 import { getBlockchainDeployment } from "../services/blockchainService.js";
 import { generateAndSignReport, generateReportPdf } from "../services/reportPdfService.js";
 import { loadChatContext } from "../utils/chatContext.js";
+import { resolveCalibrationFrozenForChat } from "../services/calibrationService.js";
 import { clearReportPdfFiles, resolveReportPdfPath } from "../utils/reportPdfPaths.js";
 import { buildEvaluationLogEntry } from "../utils/evaluationLog.js";
 
@@ -19,9 +20,21 @@ export async function generateReport(req, res) {
   }
 
   const chatContext = await loadChatContext(chat_id, user_id);
+  const calibrationFrozen =
+    chatContext.calibration_frozen ||
+    (await resolveCalibrationFrozenForChat(chat_id, user_id));
   const result = await postJson(
     `${env.fastApiBaseUrl}/analyze`,
-    { call_type: "new_report", workflow_text, regulator: regulator || "RBI", top_k: 5 },
+    {
+      call_type: "new_report",
+      workflow_text,
+      regulator: regulator || "RBI",
+      top_k: 5,
+      active_categories: chatContext.selected_categories || [],
+      enable_xai: true,
+      chat_id: chat_id || undefined,
+      calibration_frozen: calibrationFrozen || undefined,
+    },
     { timeoutMs: env.fastApiTimeoutMs }
   );
 

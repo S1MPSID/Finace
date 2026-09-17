@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { MetricInfoButton } from "@/components/ui/MetricInfoButton";
 
 export function ReportHealthHeader({ report }: { report: any }) {
   return (
@@ -13,6 +14,7 @@ export function ReportHealthHeader({ report }: { report: any }) {
         <div className="flex items-end gap-2">
           <span className="text-6xl font-bold text-white leading-none">{report.compliance_score ?? "--"}</span>
           <span className="text-white/30 text-xl mb-1">/ 100</span>
+          <MetricInfoButton helpId="compliance_score" className="mb-1" />
         </div>
 
         {/* Divider */}

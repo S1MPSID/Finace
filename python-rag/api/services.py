@@ -67,14 +67,25 @@ class RAGApiService:
         top_k: int = 5,
         regulator: str | None = None,
         category: str | None = None,
+        call_type: str = "general_query",
+        active_categories: list[str] | None = None,
+        enable_xai: bool = False,
+        enable_semantic_ml: bool = False,
+        calibration_frozen: dict[str, Any] | None = None,
+        chat_id: str | None = None,
     ) -> dict:
         return self.pipeline.analyze(
-            call_type="general_query",
+            call_type=call_type,
             workflow_text=prompt,
             top_k=top_k,
             regulator=regulator,
             category=category,
             status="active",
+            enable_xai=enable_xai,
+            enable_semantic_ml=enable_semantic_ml,
+            active_categories=active_categories or [],
+            calibration_frozen=calibration_frozen,
+            chat_id=chat_id,
         )
 
     # ── New: full analysis with any call_type ──
@@ -87,6 +98,11 @@ class RAGApiService:
         top_k: int = 5,
         regulator: str | None = None,
         category: str | None = None,
+        active_categories: list[str] | None = None,
+        enable_xai: bool | None = None,
+        enable_semantic_ml: bool | None = None,
+        calibration_frozen: dict[str, Any] | None = None,
+        chat_id: str | None = None,
     ) -> dict:
         return self.pipeline.analyze(
             call_type=call_type,
@@ -95,6 +111,11 @@ class RAGApiService:
             top_k=top_k,
             regulator=regulator,
             category=category,
+            active_categories=active_categories or [],
+            enable_xai=enable_xai,
+            enable_semantic_ml=enable_semantic_ml,
+            calibration_frozen=calibration_frozen,
+            chat_id=chat_id,
         )
 
     # ── New: generate PDF report ──
@@ -201,6 +222,22 @@ class RAGApiService:
             })
             
         return {"results": results}
+
+    # ── What-if counterfactual re-score ──
+
+    def what_if(
+        self,
+        baseline_score: float,
+        score_breakdown: list[dict[str, Any]],
+        flips: dict[str, Any] | None = None,
+    ) -> dict:
+        from xai.what_if import what_if_score
+
+        return what_if_score(
+            baseline=float(baseline_score),
+            breakdown=score_breakdown,
+            flips=flips,
+        )
 
     # ── Health check ──
 

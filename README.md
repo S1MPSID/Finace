@@ -11,7 +11,8 @@ An autonomous compliance decision engine that uses RAG (Retrieval-Augmented Gene
 | Python RAG | FastAPI + **fastembed** (`BAAI/bge-large-en-v1.5`) + **Gemini 2.5 Flash** — **Docker on EC2** |
 | Database | **MongoDB Atlas** (`compliance_engine`) |
 | Vector Store | MongoDB Atlas Vector Search |
-| XAI | SHAP + LIME over a local surrogate of rules/controls/retrieval |
+| Rules | **47** category regex packs (`python-rag/rules/catalog/`) + rule engine |
+| XAI | Exact `score_breakdown` bars (rules + semantic + RAG); see `DISCUSSION_02_SHAP.md` |
 | Trust analytics | Per-chat `trust_stats` + Analyze dashboard charts |
 | Storage | IPFS (Pinata) |
 | Blockchain | Solidity / Hardhat — **Base Sepolia** |

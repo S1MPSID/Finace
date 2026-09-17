@@ -19,5 +19,17 @@ export async function loadChatContext(chatId, userId) {
     trust_stats,
     conversation_snapshots: buildConversationSnapshots(session.messages || []),
     messages: session.messages || [],
+    chat_type: session.chat_type || "general_query",
+    selected_categories: session.selected_categories || [],
+    shap_enabled: Boolean(session.shap_enabled),
+    semantic_ml_enabled: Boolean(session.semantic_ml_enabled),
+    calibration_frozen: session.calibration_phi0_blended != null
+      ? {
+          phi0_seed: session.calibration_phi0_seed,
+          phi0_live: session.calibration_phi0_live,
+          phi0_blended: session.calibration_phi0_blended,
+          frozen_at: session.calibration_frozen_at,
+        }
+      : null,
   };
 }

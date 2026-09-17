@@ -1,0 +1,66 @@
+"""BBPS, payment gateway, intermediary flows."""
+
+_BBPS = ["GENERAL", "RBI_MD", "UPI"]
+
+BBPS_PG_RULES: list[dict] = [
+    {
+        "rule_id": "R_BBPS_001_NOT_ON_BBPS",
+        "name": "Bill Pay Not on BBPS",
+        "risk_level": "MEDIUM",
+        "categories": _BBPS,
+        "patterns": [r"\bbill\s+pay(ment)?\b.*\b(not|outside)\s+bbps\b", r"\bnon[- ]bbps\s+biller\b"],
+        "requires_any": [r"\bbbbs\b", r"\bbharat\s+bill\s+payment\b", r"\bbbps\s+onboard"],
+        "flag": "Bill payments may bypass BBPS rails",
+        "recommendation": "Onboard billers via BBPS BOU/COU model where applicable.",
+    },
+    {
+        "rule_id": "R_BBPS_002_PG_WITHOUT_ESCROW",
+        "name": "Payment Gateway Escrow Gap",
+        "risk_level": "HIGH",
+        "categories": _BBPS,
+        "patterns": [r"\bpayment\s+gateway\b.*\b(no|without)\s+escrow\b", r"\bsettle\s+directly\s+to\s+merchant\b.*\bno\s+nodal\b"],
+        "requires_any": [r"\bnodal\s+account\b", r"\bescrow\b", r"\bsettlement\s+lag\b"],
+        "flag": "PG settlement / nodal account controls unclear",
+        "recommendation": "Use RBI-compliant nodal/escrow for marketplace settlements.",
+    },
+    {
+        "rule_id": "R_BBPS_003_TPV_MISSING",
+        "name": "TPV / Two-Factor for Cards Missing",
+        "risk_level": "HIGH",
+        "categories": _BBPS,
+        "patterns": [r"\bcard\b.*\b(no|without)\s+(tpv|3ds|authentication)\b", r"\bstore\s+card\b.*\bno\s+consent\b"],
+        "requires_any": [r"\b3ds\b", r"\btpv\b", r"\btokeni[sz]ation\b", r"\brupay\b.*\botp\b"],
+        "flag": "Card authentication / TPV not described",
+        "recommendation": "Enforce 3DS/OTP and tokenization for card payments.",
+    },
+    {
+        "rule_id": "R_BBPS_004_REFUND_SLA",
+        "name": "Refund / Settlement SLA Gap",
+        "risk_level": "MEDIUM",
+        "categories": _BBPS,
+        "patterns": [r"\brefund\b.*\b(no|undefined)\s+sla\b", r"\bmanual\s+refund\s+only\b"],
+        "requires_any": [r"\brefund\s+sla\b", r"\bauto\s+refund\b", r"\bsettlement\s+timeline\b"],
+        "flag": "Refund and settlement SLAs not defined",
+        "recommendation": "Publish refund TAT aligned with RBI PA guidelines.",
+    },
+    {
+        "rule_id": "R_BBPS_005_MERCHANT_KYC",
+        "name": "Merchant KYC on Gateway",
+        "risk_level": "HIGH",
+        "categories": _BBPS,
+        "patterns": [r"\bmerchant\b.*\b(onboard|listed)\b.*\bwithout\s+kyc\b", r"\banonymous\s+merchant\b"],
+        "requires_any": [r"\bmerchant\s+kyc\b", r"\bmerchant\s+due\s+diligence\b", r"\bonboarding\s+checklist\b"],
+        "flag": "Merchant onboarding KYC weak on PG",
+        "recommendation": "Verify merchant legal entity and bank account before go-live.",
+    },
+    {
+        "rule_id": "R_BBPS_006_CROSS_BORDER_PG",
+        "name": "Cross-Border PG Without Approval",
+        "risk_level": "HIGH",
+        "categories": _BBPS,
+        "patterns": [r"\binternational\s+pg\b", r"\bforeign\s+gateway\b.*\bwithout\s+rbi\b"],
+        "requires_any": [r"\bimport\s+of\s+services\b", r"\brbi\s+approval\b", r"\boutsourced\s+pg\b"],
+        "flag": "Cross-border payment processing authorization unclear",
+        "recommendation": "Obtain RBI approval for importing payment services.",
+    },
+]

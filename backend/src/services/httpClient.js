@@ -28,6 +28,40 @@ function formatUpstreamError(payload, status) {
   return `Upstream request failed with status ${status}`;
 }
 
+export async function getJson(url, { timeoutMs = 30000 } = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { accept: "application/json" },
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+    const payload = text ? safeJsonParse(text) : null;
+
+    if (!response.ok) {
+      throw new HttpError(
+        response.status >= 500 ? 502 : response.status,
+        "upstream_error",
+        formatUpstreamError(payload, response.status),
+        payload
+      );
+    }
+
+    return payload;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new HttpError(504, "upstream_timeout", "Upstream request timed out");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function postJson(url, body, { timeoutMs = 30000 } = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);

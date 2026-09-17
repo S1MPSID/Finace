@@ -1,0 +1,57 @@
+_NEFT = ["NEFT_RTGS", "GENERAL"]
+
+NEFT_RTGS_RULES: list[dict] = [
+    {
+        "rule_id": "R_NEFT_001_NO_CUT_OFF_AWARENESS",
+        "name": "NEFT/RTGS Cut-off / SLA Gap",
+        "risk_level": "LOW",
+        "categories": _NEFT,
+        "patterns": [r"\b(neft|rtgs)\b.*\b(24/7|ignore)\s+cut[- ]?off\b", r"\bno\s+settlement\s+window\b"],
+        "requires_any": [r"\bcut[- ]?off\b", r"\bsettlement\s+window\b", r"\brbi\s+neft\b"],
+        "flag": "NEFT/RTGS settlement windows not acknowledged",
+        "recommendation": "Document RBI settlement cycles and customer SLAs.",
+    },
+    {
+        "rule_id": "R_NEFT_002_NO_IFSC_VALIDATION",
+        "name": "IFSC / Account Validation Missing",
+        "risk_level": "MEDIUM",
+        "categories": _NEFT,
+        "patterns": [r"\b(no|without)\s+ifsc\s+validation\b", r"\btransfer\b.*\bunvalidated\s+account\b"],
+        "requires_any": [r"\bifsc\b", r"\baccount\s+validation\b", r"\bpenny\s+drop\b"],
+        "flag": "Beneficiary IFSC/account validation not described",
+        "recommendation": "Validate IFSC and beneficiary account before NEFT/RTGS initiation.",
+    },
+    {
+        "rule_id": "R_NEFT_003_HIGH_VALUE_NO_CALLBACK",
+        "name": "High-Value Transfer Without Callback",
+        "risk_level": "MEDIUM",
+        "categories": _NEFT,
+        "patterns": [
+            r"\bhigh[- ]value\b.*\b(no|without)\s+(callback|verification)\b",
+            r"\brtgs\b.*\bno\s+callback\b",
+        ],
+        "requires_any": [r"\bcallback\s+verification\b", r"\bdual\s+authorization\b", r"\bmaker\s+checker\b"],
+        "flag": "High-value NEFT/RTGS lacks callback or dual control",
+        "recommendation": "Add callback verification and maker-checker for high-value transfers.",
+    },
+    {
+        "rule_id": "R_NEFT_004_LEI_MISSING",
+        "name": "LEI for Large Corporate Transfers",
+        "risk_level": "LOW",
+        "categories": _NEFT,
+        "patterns": [r"\bcorporate\b.*\b(neft|rtgs)\b.*\bno\s+lei\b", r"\bhigh\s+value\b.*\bwithout\s+lei\b"],
+        "requires_any": [r"\blei\b", r"\blegal\s+entity\s+identifier\b"],
+        "flag": "LEI not collected for eligible RTGS/NEFT parties",
+        "recommendation": "Capture LEI for corporate RTGS participants where required.",
+    },
+    {
+        "rule_id": "R_NEFT_005_SANCTIONS_RTGS",
+        "name": "RTGS Sanctions Filter Gap",
+        "risk_level": "HIGH",
+        "categories": _NEFT,
+        "patterns": [r"\brtgs\b.*\b(no|without)\s+sanctions\b", r"\bneft\b.*\bskip\s+screening\b"],
+        "requires_any": [r"\bsanctions\b.*\b(rtgs|neft)\b", r"\bfilter\b.*\btransfer\b"],
+        "flag": "NEFT/RTGS sanctions filtering not described",
+        "recommendation": "Screen all outward NEFT/RTGS messages against sanctions lists.",
+    },
+]

@@ -9,6 +9,25 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
+class CalibrationFrozen(BaseModel):
+    """Per-chat snapshot of φ₀ seed/live/blended at conversation start."""
+
+    phi0_seed: float
+    phi0_live: float
+    phi0_blended: float
+    frozen_at: datetime | None = None
+
+
+class CalibrationCurrentResponse(BaseModel):
+    phi0_seed: float
+    phi0_live: float
+    phi0_blended: float
+    seed_weight: float = 0.7
+    live_weight: float = 0.3
+    phi0_live_std: float | None = None
+    phi0_live_sample_count: int | None = None
+
+
 # ── Existing models ──
 
 class QueryRequest(BaseModel):
@@ -16,13 +35,22 @@ class QueryRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=20)
     regulator: str | None = Field(default=None, max_length=120)
     category: str | None = Field(default=None, max_length=120)
+    call_type: Literal["general_query", "new_report", "update_report"] = "general_query"
+    active_categories: list[str] = Field(default_factory=list)
+    enable_xai: bool = False
+    enable_semantic_ml: bool = False
+    calibration_frozen: CalibrationFrozen | None = None
+    chat_id: str | None = Field(default=None, max_length=120)
 
 
 class QueryResponse(BaseModel):
     analysis: dict[str, Any]
     rules: dict[str, Any]
     retrieval_hits: list[dict[str, Any]]
-    xai: dict[str, Any] = Field(default_factory=dict)
+    xai: dict[str, Any] | None = None
+    score_breakdown: list[dict[str, Any]] = Field(default_factory=list)
+    score_anchor: float | None = None
+    calibration: dict[str, Any] | None = None
 
 
 class HealthResponse(BaseModel):
@@ -49,6 +77,11 @@ class AnalyzeRequest(BaseModel):
     top_k: int = Field(default=5, ge=1, le=20)
     regulator: str | None = Field(default=None, max_length=120)
     category: str | None = Field(default=None, max_length=120)
+    active_categories: list[str] = Field(default_factory=list)
+    enable_xai: bool | None = None
+    enable_semantic_ml: bool | None = None
+    calibration_frozen: CalibrationFrozen | None = None
+    chat_id: str | None = Field(default=None, max_length=120)
 
 
 class AnalyzeResponse(BaseModel):
@@ -121,6 +154,23 @@ class ProofRequest(BaseModel):
 class ProofResponse(BaseModel):
     ok: bool = True
     stdout: str = ""
+
+
+# ── New: /what-if ──
+
+class WhatIfRequest(BaseModel):
+    baseline_score: float = Field(ge=0, le=100)
+    score_breakdown: list[dict[str, Any]] = Field(default_factory=list)
+    flips: dict[str, Any] = Field(default_factory=dict)
+
+
+class WhatIfResponse(BaseModel):
+    baseline_score: float
+    score: float
+    change: float
+    breakdown: list[dict[str, Any]] = Field(default_factory=list)
+    changed: list[dict[str, Any]] = Field(default_factory=list)
+    applicable_flips: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # ── New: /search ──

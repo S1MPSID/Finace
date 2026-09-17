@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { ArrowDownRight, ArrowUpRight, BrainCircuit } from "lucide-react";
 

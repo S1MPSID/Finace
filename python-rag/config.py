@@ -46,6 +46,11 @@ class Settings(BaseSettings):
     rag_light_xai: bool = Field(default=False, alias="RAG_LIGHT_XAI")
     retrieval_max_candidates: int = Field(default=300, alias="RETRIEVAL_MAX_CANDIDATES")
 
+    calibration_seed_weight: float = Field(default=0.7, alias="CALIBRATION_SEED_WEIGHT")
+    calibration_live_weight: float = Field(default=0.3, alias="CALIBRATION_LIVE_WEIGHT")
+    calibration_seed_refresh_days: int = Field(default=30, alias="CALIBRATION_SEED_REFRESH_DAYS")
+    calibration_live_refresh_hours: int = Field(default=24, alias="CALIBRATION_LIVE_REFRESH_HOURS")
+
     # IPFS / Pinata
     pinata_api_key: str = ""
     pinata_secret_key: str = ""

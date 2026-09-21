@@ -1,41 +1,77 @@
 "use client";
 
-import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { ArrowDownRight, ArrowUpRight, BrainCircuit } from "lucide-react";
+import {
+  Bar,
+  BarChart,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { BrainCircuit, ArrowUpRight, ArrowDownRight } from "lucide-react";
 
-type XaiFeature = { feature?: string; label?: string; weight?: number; shap_value?: number; direction?: string; active?: boolean };
-type XaiPayload = {
-  observed_score?: number;
-  observed_risk?: string;
-  lime?: { features?: XaiFeature[] };
-  shap?: { features?: XaiFeature[] };
+type XaiFeature = {
+  feature?: string;
+  label?: string;
+  weight?: number;
+  shap_value?: number;
+  direction?: string;
+  active?: boolean;
 };
 
-type Factor = { id: string; label: string; influence: number; supports: boolean };
+type XaiPayload = {
+  method?: string;
+  observed_score?: number;
+  surrogate_score?: number;
+  observed_risk?: string;
+  top_drivers?: string[];
+  notes?: string[];
+  lime?: { summary?: string; features?: XaiFeature[] };
+  shap?: { summary?: string; features?: XaiFeature[] };
+};
 
-function assessment(score: number) {
-  if (score >= 80) return { label: "Good", tone: "text-emerald-300 border-emerald-400/30 bg-emerald-500/10" };
-  if (score >= 60) return { label: "Fair", tone: "text-amber-300 border-amber-400/30 bg-amber-500/10" };
-  if (score >= 40) return { label: "Needs improvement", tone: "text-orange-300 border-orange-400/30 bg-orange-500/10" };
-  return { label: "Poor", tone: "text-rose-300 border-rose-400/30 bg-rose-500/10" };
+function XaiTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0]?.payload;
+  const value = Number(payload[0]?.value ?? 0);
+  const label = row?.full || row?.name || "Impact";
+  const positive = value >= 0;
+
+  return (
+    <div className="rounded-xl border border-white/15 bg-[#121a18] px-3 py-2 shadow-lg">
+      <p className="text-[12px] font-medium text-white/90">{label}</p>
+      <p className={`mt-1 text-[12px] font-semibold ${positive ? "text-accent" : "text-rose-300"}`}>
+        Impact: {value >= 0 ? "+" : ""}
+        {value.toFixed(2)}
+      </p>
+    </div>
+  );
 }
 
-/**
- * SHAP values are score-unit contributions, not percentages.  We preserve them
- * in the payload and show users each factor's share of the total absolute
- * contribution for this response. This is a bounded, response-specific
- * "influence" percentage rather than a fabricated quality score.
- */
-function toFactors(features: XaiFeature[] | undefined): Factor[] {
-  const values = (features || []).slice(0, 6).map((feature) => ({ feature, value: Number(feature.shap_value ?? 0) }));
-  const total = values.reduce((sum, item) => sum + Math.abs(item.value), 0);
-  return values.map(({ feature, value }, index) => ({
-    id: `${feature.feature || feature.label || "factor"}-${index}`,
-    label: feature.label || feature.feature || "Assessment factor",
-    influence: total > 0 ? Math.round((Math.abs(value) / total) * 100) : 0,
-    supports: value >= 0,
-  }));
+function riskTone(risk?: string) {
+  const r = (risk || "").toUpperCase();
+  if (r === "HIGH") return "text-rose-300 border-rose-400/30 bg-rose-500/10";
+  if (r === "MEDIUM") return "text-amber-300 border-amber-400/30 bg-amber-500/10";
+  return "text-emerald-300 border-emerald-400/30 bg-emerald-500/10";
+}
+
+function toChartRows(features: XaiFeature[] | undefined, valueKey: "weight" | "shap_value") {
+  return (features || [])
+    .slice(0, 6)
+    .map((item) => {
+      const value = Number(item[valueKey] ?? 0);
+      const label = item.label || item.feature || "feature";
+      return {
+        name: label.length > 22 ? `${label.slice(0, 20)}…` : label,
+        full: label,
+        value,
+        active: !!item.active,
+        fill: value >= 0 ? "#34d399" : "#fb7185",
+      };
+    })
+    .reverse();
 }
 
 export function ExplainabilityPanel({

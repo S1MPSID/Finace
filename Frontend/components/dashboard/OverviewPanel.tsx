@@ -262,12 +262,12 @@ export function OverviewPanel() {
             ) : (
               <div className="panel-inset mt-6 px-6 py-10 text-center">
                 <FileText className="mx-auto mb-3 h-8 w-8 text-white/18" />
-                <p className="text-sm text-white/48">Run an analysis in Compliance Studio, then generate a report.</p>
+                <p className="text-sm text-white/48">Start an analysis, inspect the evidence, then send the report for review.</p>
                 <Link
                   href="/dashboard/workflow"
                   className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-accent hover:text-white"
                 >
-                  Go to Compliance Studio <ArrowRight className="h-3.5 w-3.5" />
+                  Start an analysis <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             )}
@@ -281,9 +281,9 @@ export function OverviewPanel() {
               <div className="mt-4 space-y-2">
                 {(
                   [
-                    { href: "/dashboard/workflow" as const, label: "Compliance Studio", icon: MessageSquare },
+                    { href: "/dashboard/workflow" as const, label: "Analyze workflow", icon: MessageSquare },
                     { href: "/dashboard/regulations" as const, label: "Regulation library", icon: FileText },
-                    { href: "/dashboard/evaluator" as const, label: "Evaluator queue", icon: ShieldAlert },
+                    { href: "/dashboard/evaluator" as const, label: "Reports & review", icon: ShieldAlert },
                   ] as const
                 ).map(({ href, label, icon: Icon }) => (
                   <Link
@@ -303,16 +303,30 @@ export function OverviewPanel() {
           </div>
 
           <div className="panel-accent rounded-2xl p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent/85">Document studio</p>
-            <h3 className="mt-2 text-lg font-semibold text-white">Generate legal docs</h3>
-            <p className="mt-2 text-sm leading-relaxed text-white/52">
-              Turn workflows into privacy policies and terms of service.
-            </p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent/85">Recommended demo</p>
+            <h3 className="mt-2 text-lg font-semibold text-white">From question to proof</h3>
+            <div className="mt-4 space-y-3">
+              {[
+                ["1", "Analyze", "Describe a product workflow and run the compliance check."],
+                ["2", "Explain", "Review the score, risks, rules, and cited evidence."],
+                ["3", "Verify", "Open the report, approve it, and generate an audit proof."],
+              ].map(([step, title, description]) => (
+                <div key={step} className="flex gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 text-xs font-bold text-accent">
+                    {step}
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium text-white">{title}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-white/48">{description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
             <Link
-              href="/dashboard/documents"
-              className="mt-4 inline-block rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-inset ring-white/12 transition hover:bg-white/14"
+              href="/dashboard/workflow"
+              className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white ring-1 ring-inset ring-white/12 transition hover:bg-white/14"
             >
-              Open studio
+              Start the demo <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>

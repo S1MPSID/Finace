@@ -8,7 +8,6 @@ import {
   LayoutDashboard,
   MessageSquare,
   BookOpen,
-  FileText,
   Scale,
   ScrollText,
   LogOut,
@@ -27,11 +26,10 @@ import { chatHistoryApi } from "@/services/api";
 
 const items = [
   { href: "/dashboard" as Route, label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/workflow" as Route, label: "Compliance Studio", icon: MessageSquare },
+  { href: "/dashboard/workflow" as Route, label: "Analyze workflow", icon: MessageSquare },
   { href: "/dashboard/regulations" as Route, label: "Regulations", icon: BookOpen },
-  { href: "/dashboard/documents" as Route, label: "Documents", icon: FileText },
-  { href: "/dashboard/evaluator" as Route, label: "Evaluator", icon: Scale },
-  { href: "/dashboard/audit" as Route, label: "Audit Trail", icon: ScrollText },
+  { href: "/dashboard/evaluator" as Route, label: "Reports & review", icon: Scale },
+  { href: "/dashboard/audit" as Route, label: "Proof ledger", icon: ScrollText },
 ];
 
 export function DashboardSidebar({

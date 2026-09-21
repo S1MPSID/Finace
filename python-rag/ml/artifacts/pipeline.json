@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0.0",
+  "features": [
+    "rule:R001_NO_KYC",
+    "rule:R002_P2P_CRYPTO",
+    "rule:R003_CROSS_BORDER_NO_FEMA",
+    "rule:R004_NO_GRIEVANCE",
+    "kyc_present",
+    "aml_present",
+    "transaction_monitoring",
+    "grievance_mechanism",
+    "fema_controls",
+    "authentication_control",
+    "compliance_policy_present",
+    "cross_border_activity",
+    "p2p_crypto_activity",
+    "regulatory_evidence_count",
+    "relevant_regulation_count",
+    "retrieval_strength",
+    "active_regulation_ratio"
+  ],
+  "classes": [
+    "HIGH",
+    "LOW",
+    "MEDIUM"
+  ],
+  "target": "compliance_risk_class (synthetic benchmark labels)",
+  "selected_model": "logistic_regression",
+  "model_hyperparameters": {
+    "C": 1.0,
+    "class_weight": null,
+    "dual": false,
+    "fit_intercept": true,
+    "intercept_scaling": 1,
+    "l1_ratio": 0.0,
+    "max_iter": 3000,
+    "n_jobs": null,
+    "penalty": "deprecated",
+    "random_state": 42,
+    "solver": "lbfgs",
+    "tol": 0.0001,
+    "verbose": 0,
+    "warm_start": false
+  },
+  "candidate_results": {
+    "logistic_regression": {
+      "model": "logistic_regression",
+      "val_accuracy": 0.7583,
+      "val_macro_f1": 0.7194,
+      "val_weighted_f1": 0.7531,
+      "val_ece": 0.0583,
+      "train_accuracy": 0.8005,
+      "train_macro_f1": 0.7656
+    },
+    "random_forest": {
+      "model": "random_forest",
+      "val_accuracy": 0.7333,
+      "val_macro_f1": 0.7039,
+      "val_weighted_f1": 0.736,
+      "val_ece": 0.0656,
+      "train_accuracy": 0.9053,
+      "train_macro_f1": 0.894
+    }
+  },
+  "model_version": "1.0.0",
+  "dataset_version": "v1-20260919-2400",
+  "training_utc": "2026-09-20T13:55:16.307614+00:00",
+  "runtime_versions": {
+    "python": "3.13.1",
+    "numpy": "2.3.4",
+    "scikit_learn": "1.8.0",
+    "shap": "0.51.0"
+  },
+  "seed": 20260919,
+  "split": {
+    "train_size": 0.7,
+    "n_train": 1679,
+    "n_val": 360,
+    "n_test": 361
+  },
+  "final_validation_macro_f1": 0.7194,
+  "final_validation_accuracy": 0.7583,
+  "probability_notes": [
+    "probabilities are model predicted class probabilities.",
+    "NOT calibrated confidence; ECE is reported in evaluation.",
+    "SHAP explains the selected base ML model (ml/explain.py).",
+    "Benchmark/synthetic: retrain on real labelled workflows before production use."
+  ]
+}

@@ -40,14 +40,20 @@ async function toChatResponse(result) {
     }
   }
 
-  const sources = uniqueHits.map(hit => {
+  const applicableClauses = Array.isArray(analysis.applicable_clauses)
+    ? analysis.applicable_clauses
+    : [];
+  const citationHits = applicableClauses.length > 0 ? applicableClauses : [];
+  const sources = citationHits.map(hit => {
     const lookup = docLookup[hit.document_id] || {};
     return {
       document_id: hit.document_id || "Regulation",
       section: hit.section || hit.title || "General",
       text: hit.text || hit.content || "",
-      relative_path: lookup.relative_path || hit.metadata?.relative_path || "",
-      source_file: lookup.source_file || hit.metadata?.source || "",
+      relative_path: lookup.relative_path || hit.relative_path || hit.metadata?.relative_path || "",
+      source_file: lookup.source_file || hit.source || hit.metadata?.source || "",
+      basis: hit.basis || "direct",
+      applicability_note: hit.applicability_note || "",
     };
   });
 
@@ -70,11 +76,10 @@ async function toChatResponse(result) {
         ? undefined
         : analysis.compliance_score,
     reasoningSteps: analysis.reasoning_steps || [],
-    xai: {
-      ...(result?.xai || {}),
-      semantic_evaluation: result?.semantic_evaluation || result?.xai?.semantic_evaluation || [],
-      score_breakdown: result?.score_breakdown || result?.xai?.score_breakdown || [],
-    },
+    xai: result?.xai || {},
+    ml_risk: result?.ml_risk || {},
+    evidence_scope: result?.evidence_scope || {},
+    rule_assessments: result?.rule_assessments || [],
     analysis,
     raw: analysis
   };

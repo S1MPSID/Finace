@@ -23,11 +23,34 @@ function buildMongoUri(uri, dbName) {
 }
 
 export async function connectDB() {
+  const fullUri = buildMongoUri(env.mongoUri, env.mongoDb);
   try {
-    const fullUri = buildMongoUri(env.mongoUri, env.mongoDb);
-    await mongoose.connect(fullUri);
+    await mongoose.connect(fullUri, { serverSelectionTimeoutMS: 5000 });
     console.log(`[MongoDB] Connected to database: ${env.mongoDb}`);
+
+    try {
+      const usersCol = mongoose.connection.collection("users");
+      const indexes = await usersCol.indexes();
+      if (indexes.some((idx) => idx.name === "email_1")) {
+        await usersCol.dropIndex("email_1");
+        console.log("[MongoDB] Dropped legacy email_1 index from users collection");
+      }
+    } catch {
+      // ignore
+    }
   } catch (error) {
+    const fallback = env.mongoFallbackUri?.trim();
+    if (fallback && env.nodeEnv !== "production") {
+      const fallbackUri = buildMongoUri(fallback, env.mongoDb);
+      console.warn(`[MongoDB] Primary connection failed (${error.code || error.name}); trying configured development fallback.`);
+      try {
+        await mongoose.connect(fallbackUri, { serverSelectionTimeoutMS: 5000 });
+        console.warn(`[MongoDB] Connected to development fallback database: ${env.mongoDb}`);
+        return;
+      } catch (fallbackError) {
+        console.error("[MongoDB] Fallback connection error:", fallbackError);
+      }
+    }
     console.error("[MongoDB] Connection error:", error);
     process.exit(1);
   }

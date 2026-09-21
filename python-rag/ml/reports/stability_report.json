@@ -1,0 +1,357 @@
+{
+  "ok": true,
+  "n_scenarios": 8,
+  "n_checks": 27,
+  "checks": [
+    {
+      "ok": true,
+      "check": "feature extraction deterministic on identical inputs"
+    },
+    {
+      "ok": true,
+      "check": "compliant_low: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "compliant_low: SHAP additivity |base+sum - p|=0.00000"
+    },
+    {
+      "ok": true,
+      "check": "compliant_low: predicted class == LOW"
+    },
+    {
+      "ok": true,
+      "check": "compliant_low: all 7 protective controls detected"
+    },
+    {
+      "ok": true,
+      "check": "missing_kyc: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "missing_kyc: SHAP additivity |base+sum - p|=0.00020"
+    },
+    {
+      "ok": true,
+      "check": "missing_kyc: rule R001_NO_KYC triggered"
+    },
+    {
+      "ok": true,
+      "check": "p2p_crypto_no_aml: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "p2p_crypto_no_aml: SHAP additivity |base+sum - p|=0.00020"
+    },
+    {
+      "ok": true,
+      "check": "p2p_crypto_no_aml: rule R002_P2P_CRYPTO triggered"
+    },
+    {
+      "ok": true,
+      "check": "cross_border_no_fema: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "cross_border_no_fema: SHAP additivity |base+sum - p|=0.00010"
+    },
+    {
+      "ok": true,
+      "check": "cross_border_no_fema: rule R003_CROSS_BORDER_NO_FEMA triggered"
+    },
+    {
+      "ok": true,
+      "check": "no_grievance: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "no_grievance: SHAP additivity |base+sum - p|=0.00000"
+    },
+    {
+      "ok": true,
+      "check": "no_grievance: rule R004_NO_GRIEVANCE triggered"
+    },
+    {
+      "ok": true,
+      "check": "remdiated: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "remdiated: SHAP additivity |base+sum - p|=0.00010"
+    },
+    {
+      "ok": true,
+      "check": "remdiated: rule R001_NO_KYC not triggered"
+    },
+    {
+      "ok": true,
+      "check": "mixed_high: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "mixed_high: SHAP additivity |base+sum - p|=0.00010"
+    },
+    {
+      "ok": true,
+      "check": "irrelevant_nonfinancial: prediction deterministic"
+    },
+    {
+      "ok": true,
+      "check": "irrelevant_nonfinancial: SHAP additivity |base+sum - p|=0.00010"
+    },
+    {
+      "ok": true,
+      "check": "irrelevant_nonfinancial: no deterministic compliance rules triggered"
+    },
+    {
+      "ok": true,
+      "check": "scenario 'compliant_low': class stable under small retrieval jitter (0 flips / 24)"
+    },
+    {
+      "ok": true,
+      "check": "scenario 'mixed_high': class stable under small retrieval jitter (0 flips / 24)"
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "compliant_low",
+      "rule_engine_flags": [],
+      "risk_class": "LOW",
+      "p_high": 0.0,
+      "feature_values": {
+        "rule:R001_NO_KYC": 0.0,
+        "rule:R002_P2P_CRYPTO": 0.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 0.0,
+        "rule:R004_NO_GRIEVANCE": 0.0,
+        "kyc_present": 1.0,
+        "aml_present": 1.0,
+        "transaction_monitoring": 1.0,
+        "grievance_mechanism": 1.0,
+        "fema_controls": 1.0,
+        "authentication_control": 1.0,
+        "compliance_policy_present": 1.0,
+        "cross_border_activity": 1.0,
+        "p2p_crypto_activity": 0.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    },
+    {
+      "id": "missing_kyc",
+      "rule_engine_flags": [
+        {
+          "rule_id": "R001_NO_KYC",
+          "name": "Missing KYC",
+          "risk_level": "HIGH",
+          "flag": "KYC process appears missing or bypassed",
+          "recommendation": "Implement mandatory full KYC before onboarding or activation."
+        }
+      ],
+      "risk_class": "MEDIUM",
+      "p_high": 0.44036,
+      "feature_values": {
+        "rule:R001_NO_KYC": 1.0,
+        "rule:R002_P2P_CRYPTO": 0.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 0.0,
+        "rule:R004_NO_GRIEVANCE": 0.0,
+        "kyc_present": 0.0,
+        "aml_present": 0.0,
+        "transaction_monitoring": 0.0,
+        "grievance_mechanism": 0.0,
+        "fema_controls": 0.0,
+        "authentication_control": 0.0,
+        "compliance_policy_present": 0.0,
+        "cross_border_activity": 0.0,
+        "p2p_crypto_activity": 0.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    },
+    {
+      "id": "p2p_crypto_no_aml",
+      "rule_engine_flags": [
+        {
+          "rule_id": "R002_P2P_CRYPTO",
+          "name": "P2P Crypto Exposure",
+          "risk_level": "HIGH",
+          "flag": "Potential high AML risk from P2P/crypto activity",
+          "recommendation": "Add AML controls, enhanced due diligence, and transaction monitoring."
+        }
+      ],
+      "risk_class": "HIGH",
+      "p_high": 0.90716,
+      "feature_values": {
+        "rule:R001_NO_KYC": 0.0,
+        "rule:R002_P2P_CRYPTO": 1.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 0.0,
+        "rule:R004_NO_GRIEVANCE": 0.0,
+        "kyc_present": 0.0,
+        "aml_present": 0.0,
+        "transaction_monitoring": 0.0,
+        "grievance_mechanism": 0.0,
+        "fema_controls": 0.0,
+        "authentication_control": 0.0,
+        "compliance_policy_present": 0.0,
+        "cross_border_activity": 0.0,
+        "p2p_crypto_activity": 1.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    },
+    {
+      "id": "cross_border_no_fema",
+      "rule_engine_flags": [
+        {
+          "rule_id": "R003_CROSS_BORDER_NO_FEMA",
+          "name": "Cross-border Without FEMA Controls",
+          "risk_level": "HIGH",
+          "flag": "Cross-border flow detected without explicit FEMA/FX compliance terms",
+          "recommendation": "Add FEMA checks, regulatory reporting, and forex declaration workflow."
+        }
+      ],
+      "risk_class": "HIGH",
+      "p_high": 0.90202,
+      "feature_values": {
+        "rule:R001_NO_KYC": 0.0,
+        "rule:R002_P2P_CRYPTO": 0.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 1.0,
+        "rule:R004_NO_GRIEVANCE": 0.0,
+        "kyc_present": 0.0,
+        "aml_present": 0.0,
+        "transaction_monitoring": 0.0,
+        "grievance_mechanism": 0.0,
+        "fema_controls": 0.0,
+        "authentication_control": 0.0,
+        "compliance_policy_present": 0.0,
+        "cross_border_activity": 1.0,
+        "p2p_crypto_activity": 0.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    },
+    {
+      "id": "no_grievance",
+      "rule_engine_flags": [
+        {
+          "rule_id": "R004_NO_GRIEVANCE",
+          "name": "Missing Grievance Redressal",
+          "risk_level": "MEDIUM",
+          "flag": "Grievance redressal/complaint handling appears absent",
+          "recommendation": "Define grievance process with SLA, escalation matrix, and audit trail."
+        }
+      ],
+      "risk_class": "MEDIUM",
+      "p_high": 0.02392,
+      "feature_values": {
+        "rule:R001_NO_KYC": 0.0,
+        "rule:R002_P2P_CRYPTO": 0.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 0.0,
+        "rule:R004_NO_GRIEVANCE": 1.0,
+        "kyc_present": 0.0,
+        "aml_present": 0.0,
+        "transaction_monitoring": 0.0,
+        "grievance_mechanism": 0.0,
+        "fema_controls": 0.0,
+        "authentication_control": 0.0,
+        "compliance_policy_present": 0.0,
+        "cross_border_activity": 0.0,
+        "p2p_crypto_activity": 0.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    },
+    {
+      "id": "remdiated",
+      "rule_engine_flags": [],
+      "risk_class": "LOW",
+      "p_high": 0.02158,
+      "feature_values": {
+        "rule:R001_NO_KYC": 0.0,
+        "rule:R002_P2P_CRYPTO": 0.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 0.0,
+        "rule:R004_NO_GRIEVANCE": 0.0,
+        "kyc_present": 0.0,
+        "aml_present": 0.0,
+        "transaction_monitoring": 0.0,
+        "grievance_mechanism": 1.0,
+        "fema_controls": 0.0,
+        "authentication_control": 0.0,
+        "compliance_policy_present": 0.0,
+        "cross_border_activity": 0.0,
+        "p2p_crypto_activity": 0.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    },
+    {
+      "id": "mixed_high",
+      "rule_engine_flags": [
+        {
+          "rule_id": "R001_NO_KYC",
+          "name": "Missing KYC",
+          "risk_level": "HIGH",
+          "flag": "KYC process appears missing or bypassed",
+          "recommendation": "Implement mandatory full KYC before onboarding or activation."
+        }
+      ],
+      "risk_class": "HIGH",
+      "p_high": 0.99267,
+      "feature_values": {
+        "rule:R001_NO_KYC": 1.0,
+        "rule:R002_P2P_CRYPTO": 1.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 1.0,
+        "rule:R004_NO_GRIEVANCE": 0.0,
+        "kyc_present": 0.0,
+        "aml_present": 0.0,
+        "transaction_monitoring": 0.0,
+        "grievance_mechanism": 0.0,
+        "fema_controls": 0.0,
+        "authentication_control": 0.0,
+        "compliance_policy_present": 0.0,
+        "cross_border_activity": 0.0,
+        "p2p_crypto_activity": 1.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    },
+    {
+      "id": "irrelevant_nonfinancial",
+      "rule_engine_flags": [],
+      "risk_class": "MEDIUM",
+      "p_high": 0.03373,
+      "feature_values": {
+        "rule:R001_NO_KYC": 0.0,
+        "rule:R002_P2P_CRYPTO": 0.0,
+        "rule:R003_CROSS_BORDER_NO_FEMA": 0.0,
+        "rule:R004_NO_GRIEVANCE": 0.0,
+        "kyc_present": 0.0,
+        "aml_present": 0.0,
+        "transaction_monitoring": 0.0,
+        "grievance_mechanism": 0.0,
+        "fema_controls": 0.0,
+        "authentication_control": 0.0,
+        "compliance_policy_present": 0.0,
+        "cross_border_activity": 0.0,
+        "p2p_crypto_activity": 0.0,
+        "regulatory_evidence_count": 1.0,
+        "relevant_regulation_count": 0.8,
+        "retrieval_strength": 0.78,
+        "active_regulation_ratio": 1.0
+      }
+    }
+  ]
+}

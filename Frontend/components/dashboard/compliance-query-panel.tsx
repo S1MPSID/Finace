@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 
 import { queryCompliance, type RagQueryResponse } from "@/services/api";
 import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
+import { MLRiskPanel } from "@/components/reports/MLRiskPanel";
+import { EvidenceScopeNotice } from "@/components/reports/EvidenceScopeNotice";
+import { RuleImpactPanel } from "@/components/reports/RuleImpactPanel";
 
 const starterPrompt =
   "We are launching a cross-border crypto wallet for users in India and the UAE without KYC. What compliance risks should we address first?";
@@ -39,7 +42,8 @@ export function ComplianceQueryPanel() {
             <p className="text-sm text-accent">Live Query Flow</p>
             <h2 className="mt-3 text-2xl font-semibold text-white">Ask · Retrieve · Explain</h2>
             <p className="mt-2 text-sm text-white/50 leading-6 max-w-lg">
-              Queries run through Node → FastAPI RAG, then SHAP/LIME explain the score drivers.
+              Queries run through Node → FastAPI RAG, then the ML risk model and exact probability-SHAP
+              explain the drivers behind each compliance decision.
             </p>
           </div>
           <span className="rounded-full border border-accent/20 bg-accent/10 px-3 py-1 text-xs uppercase tracking-[0.18em] text-accent">
@@ -102,6 +106,7 @@ export function ComplianceQueryPanel() {
             </div>
           ) : result ? (
             <div className="mt-6 space-y-4">
+              <EvidenceScopeNotice scope={result.evidence_scope} />
               <div className="rounded-[1.4rem] border border-white/8 bg-white/[0.03] p-5">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="rounded-full bg-white/8 px-3 py-1 text-xs uppercase tracking-[0.18em] text-white/70">
@@ -178,6 +183,18 @@ export function ComplianceQueryPanel() {
           </div>
         </div>
       </div>
+
+      {result?.ml_risk && (
+        <motion.div className="xl:col-span-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <MLRiskPanel mlRisk={result.ml_risk} />
+        </motion.div>
+      )}
+
+      {result?.rule_assessments?.length ? (
+        <motion.div className="xl:col-span-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <RuleImpactPanel assessments={result.rule_assessments} />
+        </motion.div>
+      ) : null}
 
       {result?.xai && (
         <motion.div className="xl:col-span-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

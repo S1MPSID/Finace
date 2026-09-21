@@ -184,7 +184,7 @@ export function buildTrustAnalytics(messages: TrustChatMessage[]): TrustAnalytic
   }));
 
   const retrievalBars = [
-    { name: "Hit count", value: Number(featureValues["Number of matching regulations"] ?? 0) * 100 },
+    { name: "Hit coverage", value: Number(featureValues["Number of matching regulations"] ?? 0) * 100 },
     { name: "Top match", value: Number(featureValues["Top regulation match strength"] ?? 0) * 100 },
     { name: "Avg match", value: Number(featureValues["Average regulation match strength"] ?? 0) * 100 },
     { name: "Detail", value: Number(featureValues["Workflow detail completeness"] ?? 0) * 100 },

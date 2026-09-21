@@ -47,10 +47,10 @@ class QueryResponse(BaseModel):
     analysis: dict[str, Any]
     rules: dict[str, Any]
     retrieval_hits: list[dict[str, Any]]
-    xai: dict[str, Any] | None = None
-    score_breakdown: list[dict[str, Any]] = Field(default_factory=list)
-    score_anchor: float | None = None
-    calibration: dict[str, Any] | None = None
+    xai: dict[str, Any] = Field(default_factory=dict)
+    ml_risk: dict[str, Any] = Field(default_factory=dict)
+    evidence_scope: dict[str, Any] = Field(default_factory=dict)
+    rule_assessments: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class HealthResponse(BaseModel):
@@ -66,6 +66,8 @@ class HealthResponse(BaseModel):
     llm_provider: str
     llm_model: str
     llm_enabled: bool
+    ml_risk_ready: bool = False
+    ml_risk_model: str = ""
 
 
 # ── New: /analyze ──
@@ -89,6 +91,9 @@ class AnalyzeResponse(BaseModel):
     rules: dict[str, Any]
     retrieval_hits: list[dict[str, Any]]
     xai: dict[str, Any] = Field(default_factory=dict)
+    ml_risk: dict[str, Any] = Field(default_factory=dict)
+    evidence_scope: dict[str, Any] = Field(default_factory=dict)
+    rule_assessments: list[dict[str, Any]] = Field(default_factory=list)
 
 
 # ── New: /report ──

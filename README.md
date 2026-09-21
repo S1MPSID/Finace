@@ -11,8 +11,7 @@ An autonomous compliance decision engine that uses RAG (Retrieval-Augmented Gene
 | Python RAG | FastAPI + **fastembed** (`BAAI/bge-large-en-v1.5`) + **Gemini 2.5 Flash** — **Docker on EC2** |
 | Database | **MongoDB Atlas** (`compliance_engine`) |
 | Vector Store | MongoDB Atlas Vector Search |
-| Rules | **47** category regex packs (`python-rag/rules/catalog/`) + rule engine |
-| XAI | Exact `score_breakdown` bars (rules + semantic + RAG); see `DISCUSSION_02_SHAP.md` |
+| XAI | Legacy score-surrogate SHAP/LIME plus model-specific probability-space SHAP for ML risk |
 | Trust analytics | Per-chat `trust_stats` + Analyze dashboard charts |
 | Storage | IPFS (Pinata) |
 | Blockchain | Solidity / Hardhat — **Base Sepolia** |
@@ -69,7 +68,9 @@ In Compliance Studio, switch **Chat → Analyze** to open the trust dashboard. I
 
 **SHAP** (SHapley Additive exPlanations) attributes a model prediction to input features using game-theory Shapley values. In Finace, the hybrid engine (rules + RAG + LLM) produces a compliance score. We fit a **local linear surrogate** over interpretable features (triggered rules, KYC/AML/FEMA controls, retrieval strength, etc.), then use SHAP to show which features pushed the score up or down. That powers the “Why this score” panel (drivers + bar chart) in Compliance Studio.
 
-LIME is computed alongside SHAP as a second local explanation for the same surrogate.
+LIME remains only as an optional research comparator for the legacy surrogate and is not part of the primary ML report.
+
+The ML component is a research/prototype risk-prediction layer. It does not constitute legal advice and does not replace regulatory or legal review.
 
 ## Project structure (refactored)
 

@@ -1,0 +1,63 @@
+{
+  "purpose": "SYNTHETIC development benchmark dataset for the FINACE ML risk prediction layer. NOT regulatory ground truth.",
+  "created_utc": "20260920-182604",
+  "seed": 20260919,
+  "n_rows": 2400,
+  "top_k": 5,
+  "schema_version": "1.0.0",
+  "features": [
+    "rule:R001_NO_KYC",
+    "rule:R002_P2P_CRYPTO",
+    "rule:R003_CROSS_BORDER_NO_FEMA",
+    "rule:R004_NO_GRIEVANCE",
+    "kyc_present",
+    "aml_present",
+    "transaction_monitoring",
+    "grievance_mechanism",
+    "fema_controls",
+    "authentication_control",
+    "compliance_policy_present",
+    "cross_border_activity",
+    "p2p_crypto_activity",
+    "regulatory_evidence_count",
+    "relevant_regulation_count",
+    "retrieval_strength",
+    "active_regulation_ratio"
+  ],
+  "label_distribution": {
+    "HIGH": 1060,
+    "MEDIUM": 602,
+    "LOW": 738
+  },
+  "rule_trigger_distribution": {
+    "R001_NO_KYC": 930,
+    "R004_NO_GRIEVANCE": 1045,
+    "R002_P2P_CRYPTO": 396,
+    "R003_CROSS_BORDER_NO_FEMA": 554
+  },
+  "label_rulebook": {
+    "purpose": "Synthetic benchmark/development labels for exercising the ML risk layer. Not real regulatory ground truth.",
+    "equation": "z = BASE + W_HIGH_GAP*high_gaps + W_MEDIUM_GAP*medium_gaps + W_EXPOSURE*exposures + W_MISSING_CONTROL*missing_controls + W_INACTIVE_EVIDENCE*(1-active_ratio) + latent + noise",
+    "weights": {
+      "BASE_RISK": 0.1,
+      "W_HIGH_GAP": 0.28,
+      "W_MEDIUM_GAP": 0.13,
+      "W_EXPOSURE": 0.08,
+      "W_MISSING_CONTROL": 0.035,
+      "W_INACTIVE_EVIDENCE": 0.03,
+      "LATENT_STD": 0.1,
+      "NOISE_STD": 0.06
+    },
+    "thresholds": {
+      "LOW": "[0, 0.38)",
+      "MEDIUM": "[0.38, 0.62)",
+      "HIGH": "[0.62, 1]"
+    },
+    "on_label_distribution": "Because z starts at BASE_RISK=0.10 and only gains ~0.28 per HIGH gap, scenarios with no triggered rules and good controls land in LOW, while scenarios with multiple HIGH gaps land in HIGH; the boundary band is noisy."
+  },
+  "rules_hash": "0e3555700a2e",
+  "notes": [
+    "workflow_description is generated from a flag-matched vocabulary so the live rule engine and the online feature extractor reproduce the row.",
+    "retrieval metrics are sampled (synthetic); at serving time they are measured from LocalRetriever.search output."
+  ]
+}

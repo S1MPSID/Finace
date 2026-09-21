@@ -14,16 +14,21 @@ _client: MongoClient | None = None
 def get_client() -> MongoClient:
     global _client
     if _client is None:
-        _client = MongoClient(
-            settings.mongo_uri,
-            serverSelectionTimeoutMS=15000,
-            connectTimeoutMS=20000,
-            socketTimeoutMS=120000,
-            retryWrites=True,
-            retryReads=True,
-        )
-        # Verify connection on first use
-        _client.admin.command("ping")
+        options = {
+            "serverSelectionTimeoutMS": 5000,
+            "connectTimeoutMS": 5000,
+            "socketTimeoutMS": 120000,
+            "retryWrites": True,
+            "retryReads": True,
+        }
+        try:
+            _client = MongoClient(settings.mongo_uri, **options)
+            _client.admin.command("ping")
+        except Exception:
+            if not settings.mongo_fallback_uri:
+                raise
+            _client = MongoClient(settings.mongo_fallback_uri, **options)
+            _client.admin.command("ping")
     return _client
 
 

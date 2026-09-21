@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import { ExternalLink, ShieldAlert, User as UserIcon } from "lucide-react";
 import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
+import { MLRiskPanel } from "@/components/reports/MLRiskPanel";
+import { RuleImpactPanel } from "@/components/reports/RuleImpactPanel";
 import { resolvePublicDocUrl, isPdfSourcePath } from "@/lib/docs/publicDocUrl";
 import { sourceLabel } from "@/lib/workflow/sourceUtils";
 import type { WorkflowMessage } from "@/lib/workflow/types";
@@ -65,6 +67,14 @@ export function WorkflowMessageList({ messages, loading, scrollRef }: Props) {
                   ))}
                 </div>
               )}
+
+              {m.role === "ai" && m.data?.ml_risk && (
+                <MLRiskPanel mlRisk={m.data.ml_risk} compact />
+              )}
+
+              {m.role === "ai" && m.data?.rule_assessments?.length ? (
+                <RuleImpactPanel assessments={m.data.rule_assessments} />
+              ) : null}
 
               {m.role === "ai" && m.data?.xai && (
                 <ExplainabilityPanel xai={m.data.xai} compact />

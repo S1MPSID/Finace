@@ -30,7 +30,7 @@ services:
     volumes:
       - ./python-rag/data:/app/data
       - ./data:/app/../data
-      - ./RBI DOCS:/app/../RBI DOCS
+      - ./backend/public/docs:/app/../backend/public/docs
       - rag_hf_cache:/root/.cache/huggingface
     depends_on:
       mongo:

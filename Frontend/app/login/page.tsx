@@ -115,7 +115,7 @@ export default function LoginPage() {
       }
       // Keep loading true through navigation
     } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Login failed");
+      setError(err.response?.data?.message || err.response?.data?.error || err.message || "Login failed");
       setLoading(false);
     }
   };

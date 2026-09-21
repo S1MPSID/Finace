@@ -16,6 +16,8 @@ class ApplicableClause(BaseModel):
     title: str = Field(default="")
     text: str = Field(default="")
     source: str = Field(default="")
+    basis: str = Field(default="direct")
+    applicability_note: str = Field(default="")
 
 
 class ComplianceOutput(BaseModel):

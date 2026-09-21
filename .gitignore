@@ -34,6 +34,10 @@ data/
 huggingface/
 RBI DOCS/
 !backend/public/docs/
+**/.pytest_cache/
+**/.next/
+**/coverage/
+python-rag/uv*.exe
 
 # VS Code
 .vscode/

@@ -28,8 +28,7 @@ def build_compliance_prompt(
     top_k: int = 5,
     triggered_rules: list[dict] | None = None,
     score_improvement_requested: bool = False,
-    system_compliance_score: int | None = None,
-    system_risk_level: str | None = None,
+    evidence_scope: dict | None = None,
 ) -> str:
     context = _serialize_chunks(retrieved_chunks, max_chunks=top_k)
     output_schema = {
@@ -61,46 +60,25 @@ def build_compliance_prompt(
             "- The user wants a higher compliance score (target often 90+).\n"
             "- Re-read prior XAI drivers / SHAP stats in the conversation and treat remediations "
             "the user describes as closing those gaps.\n"
-            "- Address each triggered rule deficiency with concrete controls in the narrative.\n"
-            "- Explain what improved vs prior deficiencies (do not invent a numeric score).\n"
+            "- If controls for previous drivers are now claimed (KYC, AML/EDD, FEMA/FX, grievance, 2FA), "
+            "set compliance_score to 90-98 and risk_level to LOW unless a clear residual gap remains.\n"
+            "- Explain what improved vs the prior score and which XAI drivers were addressed.\n"
         )
 
-    system_score_block = ""
-    if system_compliance_score is not None:
-        system_score_block = (
-            f"\nSYSTEM ASSESSMENT (authoritative — do not override):\n"
-            f"- compliance_score: {system_compliance_score} (computed by rule engine, not by you)\n"
-            f"- risk_level: {system_risk_level or 'MEDIUM'}\n"
-            f"- Explain gaps and remediations aligned with triggered rules.\n"
-        )
-
-    if call_type == "general_query":
-        return (
-            "You are an ELITE fintech compliance legal expert.\n"
-            "Call type: general_query\n\n"
-            "GOAL: Answer the user's question directly using the provided regulatory context.\n\n"
-            "This is an INFORMATIONAL query, not a compliance assessment.\n"
-            "Do NOT treat the question as a workflow to evaluate.\n"
-            "Answer the question factually, citing specific clauses/regulations from the context.\n\n"
-            "SCORING: Do NOT output compliance_score. Do NOT create risk breakdowns or remediation plans.\n"
-            "If the user asks about compliance requirements, explain them factually.\n"
-            "If the user asks about limits/penalties/deadlines, state them precisely.\n\n"
-            "STRICT RULES:\n"
-            "1. Answer the question directly and concisely.\n"
-            "2. Cite specific annexures/clauses from the context when available.\n"
-            "3. Put your answer in 'explanation' as HTML using <h2> and <p> tags.\n"
-            "4. Use 'applicable_clauses' to quote the most relevant legal text.\n"
-            "5. NO MARKDOWN fences. Return only valid JSON.\n"
-            "6. 'explanation' MUST be a non-empty string.\n\n"
-            f"User Question:\n{workflow_text}\n\n"
-            f"{existing_block}\n"
-            f"Regulatory Context (The Evidence):\n{context}\n\n"
-            "Expected Response Style:\n"
-            "Provide a clear, direct answer to the user's question.\n"
-            "Include relevant regulatory references where applicable.\n"
-            "Do NOT create risk breakdowns, remediation plans, or operational impact analysis.\n\n"
-            f"Output JSON schema:\n{json.dumps(output_schema)}"
-        )
+    scope = evidence_scope or {}
+    scope_block = (
+        "\nEVIDENCE APPLICABILITY GATE:\n"
+        f"- Workflow domains: {', '.join(scope.get('workflow_domains') or ['unclassified'])}\n"
+        f"- Direct evidence domains found: {', '.join(scope.get('direct_evidence_domains') or ['none'])}\n"
+        f"- Unresolved evidence domains: {', '.join(scope.get('unresolved_domains') or ['none'])}\n"
+        "- Embedding similarity is not proof that a clause applies to this entity or product.\n"
+        "- Do not use merchant-acquisition, BHIM/AePS, or other sector-specific text as the legal basis for VDA/remittance conclusions unless the chunk is explicitly applicable.\n"
+        "- When a domain is unresolved, say 'potential exposure detected; applicability depends on the entity, residency, transaction structure, authorisation and licence facts' and identify the missing facts.\n"
+        "- Do not say crypto is inherently high risk, FEMA is certainly violated, or consequences are inevitable.\n"
+        "- Use these exact distinctions where relevant: 'significant potential compliance exposure', 'potential AML/CFT risk', and 'may expose the platform to ... depending on the applicable regulatory framework and entity status'.\n"
+        "- Never describe KYC, AML, FEMA, grievance, or monitoring controls as universally applicable without entity, activity, jurisdiction and framework support.\n"
+        "- Distinguish every action as one of: REGULATORY REQUIREMENT IF APPLICABLE, RECOMMENDED MITIGATION, or VALIDATION NEEDED.\n"
+    )
 
     return (
         "You are an ELITE fintech compliance legal expert.\n"
@@ -115,9 +93,12 @@ def build_compliance_prompt(
         "4. Use 'applicable_clauses' to quote the most relevant legal text.\n"
         "5. NO MARKDOWN fences. Return only valid JSON.\n"
         "6. 'explanation' MUST be a non-empty string.\n\n"
+        "7. A missing control is a workflow observation, not automatically a legal violation.\n"
+        "8. If no directly applicable clause is retrieved, explicitly say that the evidence is insufficient for a definitive legal conclusion.\n\n"
         f"Still-active deterministic rule flags (from USER text only):\n{rules_block}\n"
         f"{system_score_block}"
         f"{improve_block}\n"
+        f"{scope_block}\n"
         f"Workflow Input:\n{workflow_text}\n\n"
         f"{existing_block}\n"
         f"Regulatory Context (The Evidence):\n{context}\n\n"

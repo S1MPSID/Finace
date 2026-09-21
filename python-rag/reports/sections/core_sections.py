@@ -226,7 +226,74 @@ def append_compliance_determination(story, styles, analysis: dict) -> None:
         story.append(Paragraph("<b>3.2 Assessment Trail</b>", styles["subsection"]))
         for i, step in enumerate(as_list(analysis.get("reasoning_steps")), start=1):
             story.append(Paragraph(f"{i}. {step}", styles["bullet"]))
+
+    _append_ml_risk_block(story, styles, analysis)
     story.append(PageBreak())
+
+
+def _append_ml_risk_block(story, styles, analysis: dict) -> None:
+    ml = analysis.get("ml_risk")
+    if not isinstance(ml, dict) or not ml.get("available"):
+        return
+
+    explanation = ml.get("explanation") or {}
+    probabilities = ml.get("probabilities") or {}
+    drivers = as_list(explanation.get("top_risk_drivers"))
+    baseline = explanation.get("baseline")
+
+    story.append(Paragraph("<b>3.3 Machine-Learning Risk Prediction Layer</b>", styles["subsection"]))
+    story.append(
+        Paragraph(
+            "In addition to the deterministic rule evaluation above, a trained machine-learning "
+            "risk model scores the workflow's structured compliance features and predicts a "
+            "risk class with per-class probabilities. The prediction is additive — it "
+            "complements, and never overrides, the rule-engine determination in Sections 3.1–3.2.",
+            styles["body"],
+        )
+    )
+
+    probe_rows = [["Signal", "Value"]]
+    probe_rows.append(["Predicted Risk Class (ML)", str(ml.get("risk_class") or "—")])
+    probe_rows.append(["P(LOW)", f"{100.0 * float(probabilities.get('LOW') or 0.0):.1f}%"])
+    probe_rows.append(["P(MEDIUM)", f"{100.0 * float(probabilities.get('MEDIUM') or 0.0):.1f}%"])
+    probe_rows.append(["P(HIGH)", f"{100.0 * float(probabilities.get('HIGH') or 0.0):.1f}%"])
+    if baseline is not None:
+        probe_rows.append(["Baseline P(HIGH)", f"{100.0 * float(baseline):.1f}%"])
+    probe_rows.append(["Explanation method", str(explanation.get("method") or "—")])
+    probe_rows.append(["Model version", str(ml.get("model_version") or "—")])
+
+    probe_table = Table(probe_rows, colWidths=[2.4 * inch, 4.1 * inch])
+    probe_table.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1e3a5f")),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTNAME", (0, 1), (0, -1), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#cbd5e1")),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story.append(Spacer(1, 8))
+    story.append(probe_table)
+    story.append(Spacer(1, 10))
+
+    if drivers:
+        story.append(Paragraph("<b>Top predictive drivers (SHAP)</b>", styles["subsection"]))
+        for driver in drivers[:5]:
+            story.append(Paragraph(f"• {driver}", styles["bullet"]))
+
+    story.append(
+        Paragraph(
+            "<i>Probabilities are model outputs, not calibrated confidence (ECE is reported in the "
+            "model evaluation record). SHAP attributions explain the ML model, not the LLM synthesis.</i>",
+            styles["legal_notice"],
+        )
+    )
 
 
 def append_gaps_and_actions(story, styles, analysis: dict) -> None:

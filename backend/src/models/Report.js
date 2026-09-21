@@ -45,6 +45,18 @@ const reportSchema = new mongoose.Schema(
       type: Object,
       default: {},
     },
+    ml_risk: {
+      type: Object,
+      default: {},
+    },
+    evidence_scope: {
+      type: Object,
+      default: {},
+    },
+    rule_assessments: {
+      type: [Object],
+      default: [],
+    },
     chat_id: String,
     trust_stats: { type: Object, default: {} },
     conversation_snapshots: { type: [Object], default: [] },

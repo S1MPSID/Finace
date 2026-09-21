@@ -9,6 +9,22 @@ export function notFoundHandler(req, res) {
 }
 
 export function errorHandler(err, req, res, _next) {
+  if (err?.code === 11000) {
+    const fields = Object.keys(err.keyPattern || err.keyValue || {});
+    const field = fields[0] || "account details";
+    const labels = {
+      username: "username",
+      email: "email",
+      user_id: "user ID",
+      evaluator_id: "evaluator ID",
+    };
+    return res.status(409).json({
+      error: "duplicate_record",
+      message: `An account with this ${labels[field] || field} already exists. Use a different value or sign in with the existing account.`,
+      requestId: req.requestId,
+    });
+  }
+
   const statusCode = err.statusCode || 500;
   const code = err.code || "internal_error";
   const message = err.message || "Unexpected server error";

@@ -1,6 +1,9 @@
 import { Info, ShieldAlert, CheckCircle2, FileText, ExternalLink, ListOrdered } from "lucide-react";
 import { motion } from "framer-motion";
 import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
+import { MLRiskPanel } from "@/components/reports/MLRiskPanel";
+import { EvidenceScopeNotice } from "@/components/reports/EvidenceScopeNotice";
+import { RuleImpactPanel } from "@/components/reports/RuleImpactPanel";
 import { isPdfSourcePath, resolvePublicDocUrl } from "@/lib/docs/publicDocUrl";
 import { useDocCatalog } from "@/hooks/useDocCatalog";
 import { resolveDocPath } from "@/lib/docs/docCatalog";
@@ -30,6 +33,11 @@ export function ReportDetails({ report }: { report: any }) {
       </motion.div>
 
       <ExplainabilityPanel xai={report.xai} />
+
+      <MLRiskPanel mlRisk={report.ml_risk} />
+
+      <EvidenceScopeNotice scope={report.evidence_scope} />
+      <RuleImpactPanel assessments={report.rule_assessments} />
 
       {!!report.reasoning_steps?.length && (
         <motion.div

@@ -34,6 +34,13 @@ _CONTROL_FEATURES: list[tuple[str, list[str]]] = [
     ("has_fema", [r"\bfema\b", r"\bfx\s+compliance\b", r"\bforex\b"]),
     ("has_2fa", [r"\b2fa\b", r"\bmfa\b", r"\botp\b", r"\btwo[- ]factor\b"]),
 ]
+_NEGATION_RE = re.compile(
+    r"\b(?:no|not|without|missing|absent|lack|lacks|never|bypass|bypassed|"
+    r"do\s+not|does\s+not|did\s+not|don't|doesn't)\b",
+    flags=re.IGNORECASE,
+)
+_TOKEN_RE = re.compile(r"\S+")
+_NEGATION_WINDOW = 6
 
 
 @dataclass
@@ -43,7 +50,13 @@ class FeatureSpec:
 
 
 def _match_any(patterns: list[str], text: str) -> bool:
-    return any(re.search(p, text, flags=re.IGNORECASE) for p in patterns)
+    for pattern in patterns:
+        for match in re.finditer(pattern, text, flags=re.IGNORECASE):
+            left = _TOKEN_RE.findall(text[: match.start()])[-_NEGATION_WINDOW:]
+            right = _TOKEN_RE.findall(text[match.end() :])[:_NEGATION_WINDOW]
+            if not _NEGATION_RE.search(" ".join(left + right)):
+                return True
+    return False
 
 
 def build_feature_spec() -> FeatureSpec:
@@ -106,7 +119,7 @@ def score_from_features(x: np.ndarray, spec: FeatureSpec) -> float:
     """
     named = {name: float(val) for name, val in zip(spec.names, x)}
 
-    score = 82.0
+    score = 100.0
     # Triggered risk rules lower the score (mirrors rule_engine merge).
     for rid in spec.rule_ids:
         if named.get(f"rule:{rid}", 0.0) >= 0.5:
@@ -114,26 +127,25 @@ def score_from_features(x: np.ndarray, spec: FeatureSpec) -> float:
             if not rule:
                 continue
             if rule["risk_level"] == "HIGH":
-                score -= 28.0
+                score -= 15.0
             elif rule["risk_level"] == "MEDIUM":
-                score -= 14.0
+                score -= 5.0
             else:
-                score -= 6.0
+                score -= 2.0
 
     # Controls improve score.
     for control, weight in (
-        ("has_kyc", 8.0),
-        ("has_aml", 7.0),
-        ("has_grievance", 5.0),
-        ("has_fema", 6.0),
-        ("has_2fa", 4.0),
+        ("has_kyc", 5.0),
+        ("has_aml", 5.0),
+        ("has_grievance", 3.0),
+        ("has_fema", 3.0),
+        ("has_2fa", 3.0),
     ):
         score += named.get(control, 0.0) * weight
 
     # Stronger retrieval evidence modestly improves confidence/score.
-    score += named.get("retrieval_top_score", 0.0) * 6.0
-    score += named.get("retrieval_mean_score", 0.0) * 4.0
-    score += named.get("retrieval_hit_count", 0.0) * 3.0
+    score += named.get("retrieval_top_score", 0.0) * 2.0
+    score += named.get("retrieval_mean_score", 0.0) * 2.0
 
     # Very short workflows are under-specified.
     if named.get("workflow_length_norm", 0.0) < 0.15:

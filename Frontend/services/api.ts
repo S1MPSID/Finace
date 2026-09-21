@@ -172,6 +172,26 @@ export interface RagQueryResponse {
     text: string;
   }>;
   xai?: any;
+  ml_risk?: any;
+  evidence_scope?: {
+    workflow_domains?: string[];
+    direct_evidence_domains?: string[];
+    unresolved_domains?: string[];
+    warnings?: string[];
+  };
+  rule_assessments?: Array<{
+    rule_id?: string;
+    name?: string;
+    risk_level?: string;
+    triggered?: boolean;
+    status?: string;
+    impact_rank?: number;
+    impact_value?: number;
+    impact_units?: string;
+    impact_basis?: string;
+    evidence_status?: string;
+    applicability?: string;
+  }>;
   analysis?: any;
 }
 

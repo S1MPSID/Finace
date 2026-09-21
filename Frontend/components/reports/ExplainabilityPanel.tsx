@@ -81,7 +81,14 @@ export function ExplainabilityPanel({
   xai?: XaiPayload | null;
   compact?: boolean;
 }) {
-  if (!xai || (!xai.shap?.features?.length && !xai.lime?.features?.length)) {
+  // The old xai payload is a rule-engine surrogate. It is retained for API and
+  // historical report compatibility, but it must not be presented as SHAP for
+  // the ML model. The ML Risk Prediction panel is the user-facing explanation.
+  if (
+    !xai ||
+    xai.method === "hybrid_surrogate_shap_lime" ||
+    (!xai.shap?.features?.length && !xai.lime?.features?.length)
+  ) {
     return null;
   }
 
@@ -96,7 +103,7 @@ export function ExplainabilityPanel({
             <BrainCircuit className="h-4 w-4 text-accent" />
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">Why this score</p>
-              <p className="text-xs text-white/55">SHAP feature drivers</p>
+              <p className="text-xs text-white/55">Surrogate SHAP drivers of the rule-engine score</p>
             </div>
           </div>
           <span className={`border px-2 py-1 text-[10px] font-bold uppercase tracking-wider ${riskTone(xai.observed_risk)}`}>
@@ -145,6 +152,11 @@ export function ExplainabilityPanel({
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        <p className="text-[10px] leading-4 text-white/35">
+          Attribution units follow the surrogate model output (log-odds), not calibrated probability.
+          The ML risk prediction with probability-space SHAP is shown in the ML Risk Prediction panel. Calibration was evaluated separately; these outputs are not calibrated confidence.
+        </p>
       </div>
     );
   }
@@ -160,7 +172,9 @@ export function ExplainabilityPanel({
           <BrainCircuit className="h-5 w-5 text-accent" />
           <div>
             <h3 className="text-sm font-semibold text-white">Explainable AI</h3>
-            <p className="text-xs text-white/45">SHAP + LIME drivers behind this compliance score</p>
+            <p className="text-xs text-white/45">
+              Surrogate SHAP/LIME drivers behind the hybrid rule-engine score (does not explain the ML risk model)
+            </p>
           </div>
         </div>
         <span className={`border px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${riskTone(xai.observed_risk)}`}>
@@ -194,6 +208,23 @@ export function ExplainabilityPanel({
           </BarChart>
         </ResponsiveContainer>
       </div>
+
+      <details className="group">
+        <summary className="flex cursor-pointer items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-white/40 hover:text-white/70">
+          Technical notes &amp; units
+        </summary>
+        <div className="mt-2 space-y-1.5 border-l border-white/10 pl-3">
+          {(xai.notes || []).map((note) => (
+            <p key={note} className="text-[11px] leading-5 text-white/50">
+              {note}
+            </p>
+          ))}
+          <p className="text-[11px] leading-5 text-white/50">
+            These attributions describe the hybrid rule-engine surrogate, not the ML risk model.
+            The ML model's exact probability-SHAP is shown in the ML Risk Prediction panel.
+          </p>
+        </div>
+      </details>
     </motion.section>
   );
 }

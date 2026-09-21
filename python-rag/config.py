@@ -8,6 +8,7 @@ from pydantic_settings import SettingsConfigDict
 class Settings(BaseSettings):
     # MongoDB
     mongo_uri: str = "mongodb://localhost:27017"
+    mongo_fallback_uri: str = Field(default="", alias="MONGO_FALLBACK_URI")
     mongo_db: str = "compliance_engine"
 
     # LLM — Gemini 2.5 Flash (primary)
@@ -59,7 +60,11 @@ class Settings(BaseSettings):
     project_root: Path = Path(__file__).resolve().parent.parent
     service_root: Path = Path(__file__).resolve().parent
     data_dir: Path = Field(default=Path("../data"), alias="DATA_DIR")
-    rbi_docs_dir: Path = Field(default=Path("../RBI DOCS"), alias="RBI_DOCS_DIR")
+    # Keep the document corpus in the backend's public directory so ingestion
+    # and the document-serving API use one canonical copy.
+    rbi_docs_dir: Path = Field(
+        default=Path("../backend/public/docs"), alias="RBI_DOCS_DIR"
+    )
 
     model_config = SettingsConfigDict(
         env_file=str(Path(__file__).resolve().parent / ".env"),

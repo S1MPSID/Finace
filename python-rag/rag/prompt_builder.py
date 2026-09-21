@@ -28,6 +28,7 @@ def build_compliance_prompt(
     top_k: int = 5,
     triggered_rules: list[dict] | None = None,
     score_improvement_requested: bool = False,
+    evidence_scope: dict | None = None,
 ) -> str:
     context = _serialize_chunks(retrieved_chunks, max_chunks=top_k)
     output_schema = {
@@ -65,6 +66,21 @@ def build_compliance_prompt(
             "- Explain what improved vs the prior score and which XAI drivers were addressed.\n"
         )
 
+    scope = evidence_scope or {}
+    scope_block = (
+        "\nEVIDENCE APPLICABILITY GATE:\n"
+        f"- Workflow domains: {', '.join(scope.get('workflow_domains') or ['unclassified'])}\n"
+        f"- Direct evidence domains found: {', '.join(scope.get('direct_evidence_domains') or ['none'])}\n"
+        f"- Unresolved evidence domains: {', '.join(scope.get('unresolved_domains') or ['none'])}\n"
+        "- Embedding similarity is not proof that a clause applies to this entity or product.\n"
+        "- Do not use merchant-acquisition, BHIM/AePS, or other sector-specific text as the legal basis for VDA/remittance conclusions unless the chunk is explicitly applicable.\n"
+        "- When a domain is unresolved, say 'potential exposure detected; applicability depends on the entity, residency, transaction structure, authorisation and licence facts' and identify the missing facts.\n"
+        "- Do not say crypto is inherently high risk, FEMA is certainly violated, or consequences are inevitable.\n"
+        "- Use these exact distinctions where relevant: 'significant potential compliance exposure', 'potential AML/CFT risk', and 'may expose the platform to ... depending on the applicable regulatory framework and entity status'.\n"
+        "- Never describe KYC, AML, FEMA, grievance, or monitoring controls as universally applicable without entity, activity, jurisdiction and framework support.\n"
+        "- Distinguish every action as one of: REGULATORY REQUIREMENT IF APPLICABLE, RECOMMENDED MITIGATION, or VALIDATION NEEDED.\n"
+    )
+
     return (
         "You are an ELITE fintech compliance legal expert.\n"
         f"Call type: {call_type}\n\n"
@@ -85,8 +101,11 @@ def build_compliance_prompt(
         "4. Use 'applicable_clauses' to quote the most relevant legal text.\n"
         "5. NO MARKDOWN fences. Return only valid JSON.\n"
         "6. 'explanation' MUST be a non-empty string.\n\n"
+        "7. A missing control is a workflow observation, not automatically a legal violation.\n"
+        "8. If no directly applicable clause is retrieved, explicitly say that the evidence is insufficient for a definitive legal conclusion.\n\n"
         f"Still-active deterministic rule flags (from USER text only):\n{rules_block}\n"
         f"{improve_block}\n"
+        f"{scope_block}\n"
         f"Workflow Input:\n{workflow_text}\n\n"
         f"{existing_block}\n"
         f"Regulatory Context (The Evidence):\n{context}\n\n"

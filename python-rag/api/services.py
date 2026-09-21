@@ -13,6 +13,7 @@ from loguru import logger
 
 from config import settings
 from db.mongo import chunks, documents, get_client
+from ml.predict import get_predictor
 from rag.rag_pipeline import RAGPipeline
 from reports.report_generator import generate_report_pdf
 from reports.pdf_signer import sign_report_pdf
@@ -252,4 +253,6 @@ class RAGApiService:
                 or os.getenv("GROQ_API_KEY")
                 or os.getenv("GROK_API_KEY")
             ),
+            "ml_risk_ready": get_predictor().available,
+            "ml_risk_model": get_predictor().model_name,
         }

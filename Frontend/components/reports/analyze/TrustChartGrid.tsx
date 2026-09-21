@@ -5,18 +5,15 @@ import {
   BarChart,
   Cell,
   ComposedChart,
-  Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
   CartesianGrid,
 } from "recharts";
-import { Activity, BadgeCheck, BrainCircuit, Sparkles } from "lucide-react";
+import { Activity, BrainCircuit } from "lucide-react";
 import type { TrustAnalytics } from "@/lib/trust/types";
 import { ACCENT_HEX } from "@/lib/theme/colors";
 import { ChartTip } from "./ChartTip";
@@ -25,7 +22,7 @@ export function TrustChartGrid({ stats }: { stats: TrustAnalytics }) {
   return (
     <>
       <div className="grid gap-5 lg:grid-cols-2">
-        <ChartCard icon={Activity} title="Score trajectory" subtitle="Compliance score vs surrogate across turns">
+        <ChartCard icon={Activity} title="Overall compliance score" subtitle="Score movement across analyzed turns" inference="A higher score means more controls were detected by FINACE; it is not a legal approval or probability of compliance.">
           <ComposedChart data={stats.scoreSeries}>
             <defs>
               <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
@@ -38,23 +35,10 @@ export function TrustChartGrid({ stats }: { stats: TrustAnalytics }) {
             <YAxis domain={[0, 100]} tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} axisLine={false} tickLine={false} />
             <Tooltip content={<ChartTip />} />
             <Area type="monotone" dataKey="score" name="Score" stroke={ACCENT_HEX} fill="url(#scoreFill)" strokeWidth={2} />
-            <Line type="monotone" dataKey="surrogate" name="Surrogate" stroke="#94a3b8" strokeDasharray="4 4" strokeWidth={1.5} dot={false} />
           </ComposedChart>
         </ChartCard>
 
-        <ChartCard icon={BadgeCheck} title="Risk mix" subtitle="How often the session landed HIGH / MEDIUM / LOW">
-          <PieChart>
-            <Pie data={stats.riskPie} dataKey="value" nameKey="name" innerRadius={48} outerRadius={78} paddingAngle={3}>
-              {stats.riskPie.map((row) => (
-                <Cell key={row.name} fill={row.fill} />
-              ))}
-            </Pie>
-            <Tooltip content={<ChartTip />} />
-            <Legend verticalAlign="bottom" formatter={(value) => <span className="text-[11px] text-white/60">{value}</span>} />
-          </PieChart>
-        </ChartCard>
-
-        <ChartCard icon={BrainCircuit} title="Latest SHAP drivers" subtitle="What pushed the newest score up or down">
+        <ChartCard icon={BrainCircuit} title="Top ML risk drivers" subtitle="Features with the largest model contribution" inference="Positive bars increase the model's predicted HIGH-risk score; negative bars reduce it. These are model contributions, not legal conclusions.">
           {stats.shapBars.length ? (
             <BarChart data={stats.shapBars} layout="vertical" margin={{ left: 4, right: 12 }}>
               <XAxis type="number" hide />
@@ -71,15 +55,6 @@ export function TrustChartGrid({ stats }: { stats: TrustAnalytics }) {
           )}
         </ChartCard>
 
-        <ChartCard icon={Sparkles} title="Trust factors" subtitle="Composite signals behind the trust index">
-          <BarChart data={stats.factorRadar}>
-            <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis domain={[0, 100]} tick={{ fill: "rgba(255,255,255,0.45)", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <Tooltip content={<ChartTip />} />
-            <Bar dataKey="score" name="Factor" fill={ACCENT_HEX} radius={[6, 6, 0, 0]} barSize={28} />
-          </BarChart>
-        </ChartCard>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
@@ -100,6 +75,7 @@ export function TrustChartGrid({ stats }: { stats: TrustAnalytics }) {
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <p className="mt-3 text-[11px] leading-5 text-white/45"><span className="text-accent/80">Inference:</span> This shows the proportion of detected protective controls. A missing control is a workflow gap; it is not automatically a proven regulatory violation.</p>
         </section>
 
         <section className="glass rounded-2xl p-4">
@@ -116,6 +92,7 @@ export function TrustChartGrid({ stats }: { stats: TrustAnalytics }) {
               </LineChart>
             </ResponsiveContainer>
           </div>
+          <p className="mt-3 text-[11px] leading-5 text-white/45"><span className="text-accent/80">Inference:</span> Strong retrieval means the indexed corpus matched the query semantically. It does not prove that the retrieved clause legally applies to the entity.</p>
         </section>
       </div>
     </>
@@ -126,11 +103,13 @@ function ChartCard({
   icon: Icon,
   title,
   subtitle,
+  inference,
   children,
 }: {
   icon: any;
   title: string;
   subtitle: string;
+  inference?: string;
   children: ReactNode;
 }) {
   return (
@@ -146,6 +125,7 @@ function ChartCard({
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">{children}</ResponsiveContainer>
       </div>
+      {inference && <p className="mt-3 text-[11px] leading-5 text-white/45"><span className="text-accent/80">Inference:</span> {inference}</p>}
       </div>
     </section>
   );

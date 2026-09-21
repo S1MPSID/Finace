@@ -15,11 +15,24 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+const localDevOrigin = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i;
+
 app.disable("x-powered-by");
 app.use(attachRequestContext);
 app.use(
   cors({
-    origin: env.corsOrigins.length > 0 ? env.corsOrigins : true,
+    origin: (origin, callback) => {
+      if (
+        !origin ||
+        env.corsOrigins.length === 0 ||
+        env.corsOrigins.includes(origin) ||
+        (env.nodeEnv !== "production" && localDevOrigin.test(origin))
+      ) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("Origin is not allowed by CORS"));
+    },
     credentials: true,
   })
 );

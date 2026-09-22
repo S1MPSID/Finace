@@ -81,4 +81,38 @@ IMPS_RULES: list[dict] = [
         "flag": "IMPS timeout / reversal policy not described",
         "recommendation": "Define TCC and customer communication for pending IMPS.",
     },
+    {
+        "rule_id": "R_IMPS_008_MMID_EXPIRY",
+        "name": "MMID Expiry / Reuse Controls",
+        "risk_level": "LOW",
+        "categories": _IMPS,
+        "patterns": [
+            r"\bmmid\b.*\b(expired|expiry|reuse|re[- ]?assignment)\b",
+            r"\b(no|without)\s+mmid\s+lifecycle\b",
+        ],
+        "requires_any": [
+            r"\bmmid\s+(lifecycle|expiry|blocking)\b",
+            r"\bmmid\s+regeneration\b",
+            r"\bcool[- ]off\b.*\bmmid\b",
+        ],
+        "flag": "MMID deactivation / reuse controls unclear",
+        "recommendation": "Deactivate unused MMIDs and apply reuse cool-off periods.",
+    },
+    {
+        "rule_id": "R_IMPS_009_NO_FRAUD_CALL_BACK",
+        "name": "IMPS High-Value Call-Back Gap",
+        "risk_level": "MEDIUM",
+        "categories": _IMPS,
+        "patterns": [
+            r"\bimps\b.*\bhigh\s+value\b.*\b(no|without)\s+call\b",
+            r"\b(no|without)\s+call[- ]back\b.*\b(imps|remittance)\b",
+        ],
+        "requires_any": [
+            r"\bcall[- ]back\b",
+            r"\bfraud\s+check\b",
+            r"\bsecond\s+factor\b.*\b(confirm|verify)\b",
+        ],
+        "flag": "High-value IMPS without call-back / confirmation",
+        "recommendation": "Add call-back or step-up confirmation for high-value IMPS.",
+    },
 ]

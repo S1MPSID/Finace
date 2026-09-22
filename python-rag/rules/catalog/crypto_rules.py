@@ -34,4 +34,31 @@ CRYPTO_RULES: list[dict] = [
         "flag": "VDA custody and key management weak",
         "recommendation": "Use HSM/multisig and segregate customer assets.",
     },
+    {
+        "rule_id": "R_CRYPTO_004_TRAVEL_RULE",
+        "name": "VDA Travel Rule / Beneficiary Info",
+        "risk_level": "MEDIUM",
+        "categories": _CRYPTO,
+        "patterns": [
+            r"\b(no|without)\s+(travel\s+rule|beneficiary\s+information)\b.*\b(vda|crypto|transfer)\b",
+            r"\bcrypto\b.*\b(no|without)\s+originator\s+info\b",
+        ],
+        "requires_any": [r"\btravel\s+rule\b", r"\boriginator\b", r"\bbeneficiary\s+information\b"],
+        "flag": "VDA transfer without travel-rule data",
+        "recommendation": "Collect and share originator/beneficiary data per FATF travel rule.",
+    },
+    {
+        "rule_id": "R_CRYPTO_005_PROPRIETARY_TRADING",
+        "name": "VDA Proprietary Trading / Conflict",
+        "risk_level": "MEDIUM",
+        "categories": _CRYPTO,
+        "patterns": [
+            r"\bproprietary\s+trading\b",
+            r"\btrade\s+with\s+own\s+(capital|account)\b.*\b(vda|crypto)\b",
+            r"\bexchange\b.*\bself[- ]dealing\b",
+        ],
+        "requires_any": [r"\bclient\s+vs\s+proprietary\b", r"\bself[- ]dealing\b.*\bpolicy\b", r"\bspread\s+disclosure\b"],
+        "flag": "Exchange engaging in proprietary trading without controls",
+        "recommendation": "Prohibit or wall off proprietary trading and disclose conflicts.",
+    },
 ]

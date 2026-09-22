@@ -12,6 +12,11 @@ from rules.catalog.npci_rules import NPCI_RULES
 from rules.catalog.rbi_md_rules import RBI_MD_RULES
 from rules.catalog.crypto_rules import CRYPTO_RULES
 from rules.catalog.fema_rules import FEMA_RULES
+from rules.catalog.grievance_rules import GRIEVANCE_RULES
+from rules.catalog.merchant_pg_rules import MERCHANT_PG_RULES
+from rules.catalog.data_security_rules import DATA_SECURITY_RULES
+from rules.catalog.fraud_ops_rules import FRAUD_OPS_RULES
+from rules.catalog.reporting_rules import REPORTING_RULES
 
 ALL_CATALOG_RULES: list[dict] = [
     *CORE_RULES,
@@ -26,4 +31,9 @@ ALL_CATALOG_RULES: list[dict] = [
     *RBI_MD_RULES,
     *CRYPTO_RULES,
     *FEMA_RULES,
+    *GRIEVANCE_RULES,
+    *MERCHANT_PG_RULES,
+    *DATA_SECURITY_RULES,
+    *FRAUD_OPS_RULES,
+    *REPORTING_RULES,
 ]

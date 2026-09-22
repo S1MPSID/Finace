@@ -3,7 +3,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch } from "@/store/hooks";
 import { upsertChatSession, toSessionRow } from "@/store/slices/chatSessionsSlice";
 import { buildSessionRowFromMessages } from "@/lib/chat/sessionRow";
-import { workflowApi, queryCompliance, chatHistoryApi } from "@/services/api";
+import { workflowApi, queryCompliance, chatHistoryApi, uploadApi } from "@/services/api";
 import { buildFullConversationPrompt } from "@/lib/workflow/conversationPrompt";
 import {
   fromPersistedMessages,
@@ -47,6 +47,8 @@ export function useWorkflowChat() {
   const [showGeneralXaiPrompt, setShowGeneralXaiPrompt] = useState(false);
   const [pendingUserMessage, setPendingUserMessage] = useState<string | null>(null);
   const [settingsHint, setSettingsHint] = useState<string | null>(null);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [pdfUploadError, setPdfUploadError] = useState<string | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const savingRef = useRef(false);
@@ -179,9 +181,8 @@ export function useWorkflowChat() {
     cfg: ChatSessionConfig = chatConfig
   ) => {
     const fullPrompt = buildFullConversationPrompt(prior, userMsg);
-    const isGeneral = cfg.chatType === "general_query";
-    const enableXai = isGeneral ? cfg.shapEnabled : true;
-    const enableSemanticMl = isGeneral ? cfg.semanticMlEnabled : true;
+    const enableXai = true;
+    const enableSemanticMl = true;
     const data: any = await queryCompliance({
       prompt: fullPrompt,
       topK: 5,
@@ -323,6 +324,33 @@ export function useWorkflowChat() {
     await sendAfterPrompt(userMsg, nextConfig);
   };
 
+  const handleUploadPdf = async (file: File) => {
+    if (!file || loading || uploadingPdf) return;
+    setPdfUploadError(null);
+    setUploadingPdf(true);
+    try {
+      const result = await uploadApi.uploadPdf(file, true);
+      if (!result.ok) {
+        throw new Error(result.warnings?.[0] || "No text could be recognised from this PDF.");
+      }
+      const docText = (result.text || "").trim();
+      const preview = docText.length > 6000 ? `${docText.slice(0, 6000)}\n…` : docText;
+      const header =
+        `I've attached the document "${result.filename}" for analysis. ` +
+        `It was recognised via ${result.method} (${result.page_count} page(s), ` +
+        `${result.char_count.toLocaleString()} characters) and indexed for search.\n\n` +
+        `Extracted document content:\n${preview || "(no text extracted)"}`;
+      await sendAfterPrompt(header, chatConfig);
+    } catch (err) {
+      console.error(err);
+      setPdfUploadError(
+        (err as any)?.message || "PDF upload failed. Is the RAG service running?"
+      );
+    } finally {
+      setUploadingPdf(false);
+    }
+  };
+
   const declineGeneralXaiPrompt = () => {
     if (typeof window !== "undefined") {
       window.localStorage.setItem(XAI_PROMPT_STORAGE_KEY, "1");
@@ -358,6 +386,9 @@ export function useWorkflowChat() {
     showGeneralXaiPrompt,
     completeGeneralXaiPrompt,
     declineGeneralXaiPrompt,
+    uploadingPdf,
+    pdfUploadError,
+    handleUploadPdf,
     showOnboarding,
     completeOnboarding,
   };

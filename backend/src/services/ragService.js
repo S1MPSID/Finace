@@ -4,7 +4,7 @@ import { env } from "../config/env.js";
 import { pythonRagDir } from "../config/paths.js";
 import { HttpError } from "../utils/httpError.js";
 import { resolvePythonCommand } from "../utils/python.js";
-import { postJson } from "./httpClient.js";
+import { postForm, postJson } from "./httpClient.js";
 
 export async function runGeneralQuery(input) {
   if (env.ragProviderMode === "http") {
@@ -139,6 +139,19 @@ export async function runRegulationSearch({ query, topK = 10, regulator = null }
       top_k: topK,
       regulator,
     },
+    { timeoutMs: env.fastApiTimeoutMs }
+  );
+}
+
+export async function uploadPdfForOcr(
+  fileBuffer,
+  { filename, ingest = false }
+) {
+  const url = `${env.fastApiBaseUrl}/upload${ingest ? "?ingest=1" : ""}`;
+  return postForm(
+    url,
+    fileBuffer,
+    { filename },
     { timeoutMs: env.fastApiTimeoutMs }
   );
 }

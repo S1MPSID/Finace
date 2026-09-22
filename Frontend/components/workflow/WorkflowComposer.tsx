@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Check, FileCheck, Mic, Plus, RefreshCw, Send, Settings } from "lucide-react";
+import { Check, FileCheck, Loader2, Mic, Paperclip, Plus, RefreshCw, Send, Settings } from "lucide-react";
 import { PAYMENT_CATEGORIES, type ChatSessionConfig } from "@/lib/workflow/categories";
 
 interface Props {
@@ -15,6 +15,9 @@ interface Props {
   onSemanticMlEnabledChange: (enabled: boolean) => void;
   onCategoriesChange: (categories: string[]) => void;
   settingsHint?: string | null;
+  onUploadPdf?: (file: File) => void;
+  uploadingPdf?: boolean;
+  pdfUploadError?: string | null;
 }
 
 export function WorkflowComposer({
@@ -30,11 +33,21 @@ export function WorkflowComposer({
   onSemanticMlEnabledChange,
   onCategoriesChange,
   settingsHint,
+  onUploadPdf,
+  uploadingPdf,
+  pdfUploadError,
 }: Props) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const showGenerate = chatConfig.chatType !== "general_query";
   const showShapToggle = chatConfig.chatType === "general_query";
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onUploadPdf) onUploadPdf(file);
+    if (e.target) e.target.value = "";
+  };
 
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -99,6 +112,26 @@ export function WorkflowComposer({
           </div>
           <div className="relative flex items-center gap-1.5">
             <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,.pdf"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading || uploadingPdf}
+                title="Upload a PDF — extract & index its content"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-white/50 hover:bg-white/10 hover:text-white disabled:opacity-40"
+              >
+                {uploadingPdf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Paperclip className="h-4 w-4" />
+                )}
+              </button>
               <button
                 type="button"
                 onClick={() => setSettingsOpen((o) => !o)}
@@ -194,6 +227,9 @@ export function WorkflowComposer({
       </div>
       {settingsHint && (
         <p className="mt-2 text-center text-[11px] text-white/45">{settingsHint}</p>
+      )}
+      {pdfUploadError && (
+        <p className="mt-2 text-center text-[11px] text-rose-400">{pdfUploadError}</p>
       )}
       <p className="mt-3 text-center text-[11px] text-white/30">
         Finace can make mistakes. Verify against primary regulations before acting.

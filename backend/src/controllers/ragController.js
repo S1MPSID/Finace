@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { runGeneralQuery, runRegulationSearch } from "../services/ragService.js";
+import { runGeneralQuery, runRegulationSearch, uploadPdfForOcr } from "../services/ragService.js";
 import { resolveCalibrationFrozenForChat } from "../services/calibrationService.js";
 
 /**
@@ -134,6 +134,31 @@ export async function searchRegulations(req, res) {
     res.status(status).json({
       ok: false,
       error: error.message || "Regulation search failed",
+      code: error.code,
+      details: error.details,
+    });
+  }
+}
+
+export async function uploadPdfDocument(req, res) {
+  if (!req.file) {
+    return res.status(400).json({ ok: false, error: "No file uploaded" });
+  }
+
+  const { ingest } = req.query ?? {};
+  const parseIngest = String(ingest ?? "0") === "1" || String(ingest ?? "0") === "true";
+
+  try {
+    const result = await uploadPdfForOcr(req.file.buffer, {
+      filename: req.file.originalname || "document.pdf",
+      ingest: parseIngest,
+    });
+    res.json({ ok: true, ...result });
+  } catch (error) {
+    const status = error.statusCode && error.statusCode >= 400 && error.statusCode < 600 ? error.statusCode : 500;
+    res.status(status).json({
+      ok: false,
+      error: error.message || "PDF upload / OCR failed",
       code: error.code,
       details: error.details,
     });

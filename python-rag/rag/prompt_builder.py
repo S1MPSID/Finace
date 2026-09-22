@@ -96,7 +96,6 @@ def build_compliance_prompt(
         "7. A missing control is a workflow observation, not automatically a legal violation.\n"
         "8. If no directly applicable clause is retrieved, explicitly say that the evidence is insufficient for a definitive legal conclusion.\n\n"
         f"Still-active deterministic rule flags (from USER text only):\n{rules_block}\n"
-        f"{system_score_block}"
         f"{improve_block}\n"
         f"{scope_block}\n"
         f"Workflow Input:\n{workflow_text}\n\n"

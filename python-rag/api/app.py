@@ -10,7 +10,8 @@ from contextlib import asynccontextmanager
 import asyncio
 import os
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
@@ -243,6 +244,36 @@ async def upload_ipfs(payload: IpfsRequest) -> IpfsResponse:
     except Exception as exc:
         logger.exception("IPFS upload failed")
         raise HTTPException(status_code=500, detail="IPFS upload failed") from exc
+
+
+# ──────────────────────────────────────────────
+# POST /upload  — Upload a PDF, extract text (OCR fallback), optionally index for RAG
+# ──────────────────────────────────────────────
+@app.post("/upload")
+async def upload_pdf(
+    file: UploadFile = File(...),
+    ingest: bool = Query(default=False, description="Chunk + embed the doc into the RAG index"),
+) -> dict:
+    if not file.filename or not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+
+    contents = await file.read()
+    if not contents:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+    try:
+        result = await run_in_threadpool(
+            service.upload_pdf,
+            file_bytes=contents,
+            filename=file.filename,
+            ingest=ingest,
+        )
+        return result
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("PDF upload / OCR failed")
+        raise HTTPException(status_code=500, detail="PDF upload / OCR failed") from exc
 
 
 # ──────────────────────────────────────────────

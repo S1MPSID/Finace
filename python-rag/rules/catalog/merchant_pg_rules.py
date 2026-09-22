@@ -1,0 +1,132 @@
+_PG = ["MERCHANT_PG", "GENERAL"]
+
+MERCHANT_PG_RULES: list[dict] = [
+    {
+        "rule_id": "R_PG_001_MERCHANT_NO_KYC",
+        "name": "Merchant Onboarding Without KYC",
+        "risk_level": "HIGH",
+        "categories": _PG,
+        "patterns": [
+            r"\bmerchant\b.*\b(no|without|skip)\s+kyc\b",
+            r"\bmerchants?\b.*\bunverified\b",
+            r"\b(no|without)\s+merchant\s+(due\s+diligence|verification)\b",
+        ],
+        "requires_any": [
+            r"\bmerchant\s+(onboarding|due\s+diligence|kyc|verification)\b",
+            r"\bmpos.\s+onboarding\b",
+            r"\bmerchant\s+risk\s+(assessment|scoring)\b",
+        ],
+        "flag": "Merchants onboarded without KYC/due diligence",
+        "recommendation": "Run merchant verification and risk scoring before activation.",
+    },
+    {
+        "rule_id": "R_PG_002_NO_ESCROW_NODAL",
+        "name": "No Escrow / Nodal Accounting",
+        "risk_level": "HIGH",
+        "categories": _PG,
+        "patterns": [
+            r"\bpayment\s+gateway\b.*\b(no|without)\s+(escrow|nodal)\b",
+            r"\bsettle\s+directly\s+to\s+merchant\b.*\bno\s+nodal\b",
+            r"\b(no|without)\s+escrow\s+account\b",
+        ],
+        "requires_any": [
+            r"\bescrow\s+account\b",
+            r"\bnodal\s+account\b",
+            r"\bpooled\s+account\b",
+            r"\bsegregated\s+(funds|balances)\b",
+        ],
+        "flag": "Aggregator funds not held via escrow/nodal accounts",
+        "recommendation": "Hold and reconcile merchant funds in escrow/nodal accounts per RBI.",
+    },
+    {
+        "rule_id": "R_PG_003_MDR_NOT_DISCLOSED",
+        "name": "MDR / Fee Disclosure Gap",
+        "risk_level": "LOW",
+        "categories": _PG,
+        "patterns": [
+            r"\bmdr\b.*\b(not|no)\s+(disclosed|published|shared)\b",
+            r"\b(no|without)\s+(mdr|interchange)\s+disclosure\b",
+            r"\bhidden\s+fees?\b",
+        ],
+        "requires_any": [
+            r"\bmdr\b",
+            r"\binterchange\b",
+            r"\bsurcharge\b.*\bdisclos",
+            r"\bzero\s+mdr\b.*\bupi\b",
+        ],
+        "flag": "Merchant MDR / fee disclosure not documented",
+        "recommendation": "Publish MDR and interchange terms to merchants.",
+    },
+    {
+        "rule_id": "R_PG_004_SUBMERCHANT_UNVETTED",
+        "name": "Sub-Merchant / Marketplace Gap",
+        "risk_level": "MEDIUM",
+        "categories": _PG,
+        "patterns": [
+            r"\bsub[- ]merchant\b.*\b(no|without)\s+(kyc|vetting|review)\b",
+            r"\bmarketplace\b.*\bunvetted\s+sellers\b",
+            r"\bpara[- ]account\b",
+        ],
+        "requires_any": [
+            r"\bsub[- ]merchant\s+(kyc|vetting|onboarding)\b",
+            r"\bseller\s+(verification|kyc)\b",
+            r"\bmarketplace\s+(governance|controls)\b",
+        ],
+        "flag": "Sub-merchants / sellers not individually vetted",
+        "recommendation": "Vet and monitor each sub-merchant under the aggregator.",
+    },
+    {
+        "rule_id": "R_PG_005_FUND_COMMINGLING",
+        "name": "Merchant / Operating Fund Commingling",
+        "risk_level": "HIGH",
+        "categories": _PG,
+        "patterns": [
+            r"\b(merchant\s+funds?|settlement\s+funds?)\b.*\b(commingl|mix(ed)?\s+with|merged)\b",
+            r"\b(no|without)\s+segregation\s+of\s+(merchant|pooled)\s+funds\b",
+        ],
+        "requires_any": [
+            r"\bsegregat",
+            r"\bseparate\s+(account|ledger)\b",
+            r"\bescrow\b.*\breconcil",
+            r"\bnodal\b.*\breconcil",
+        ],
+        "flag": "Merchant funds commingled with operating funds",
+        "recommendation": "Keep merchant settlement funds separate and reconcile daily.",
+    },
+    {
+        "rule_id": "R_PG_006_SETTLEMENT_CYCLE_NOK",
+        "name": "Settlement Cycle / T+1 Gap",
+        "risk_level": "LOW",
+        "categories": _PG,
+        "patterns": [
+            r"\bsettlement\b.*\b(no|without)\s+(defined|fixed)\s+sla\b",
+            r"\bsettlement\s+cycle\b.*\b(unclear|undefined|delayed)\b",
+            r"\b(no|without)\s+(t\+1|t\s*\+?\s*0)\s+settlement\b",
+        ],
+        "requires_any": [
+            r"\bt\s*\+?\s*\d+\s+settlement\b",
+            r"\bsettlement\s+(sla|cycle|timeline)\b",
+            r"\bpayout\s+schedule\b",
+        ],
+        "flag": "Merchant settlement cycle / SLA not defined",
+        "recommendation": "Define and publish settlement timelines (e.g., T+1).",
+    },
+    {
+        "rule_id": "R_PG_007_ACQUIRING_NO_PCI",
+        "name": "Card Acquiring Without PCI-DSS",
+        "risk_level": "HIGH",
+        "categories": _PG,
+        "patterns": [
+            r"\bcard\s+acquiring\b.*\b(no|without)\s+(pci|pcidss)\b",
+            r"\b(no|without)\s+pci[- ]dss\b.*\b(acquiring|card)\b",
+        ],
+        "requires_any": [
+            r"\bpci[- ]dss\b",
+            r"\bsaq\b",
+            r"\btokeni[sz]ation\b",
+            r"\bcard\s+data\s+protection\b",
+        ],
+        "flag": "Card (RuPay/network) acquiring without PCI-DSS evidence",
+        "recommendation": "Maintain PCI-DSS compliance and card data tokenization.",
+    },
+]

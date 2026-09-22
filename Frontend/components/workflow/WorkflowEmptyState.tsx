@@ -15,6 +15,9 @@ interface Props {
   onSemanticMlEnabledChange: (enabled: boolean) => void;
   onCategoriesChange: (categories: string[]) => void;
   settingsHint?: string | null;
+  onUploadPdf?: (file: File) => void;
+  uploadingPdf?: boolean;
+  pdfUploadError?: string | null;
 }
 
 export function WorkflowEmptyState({
@@ -29,6 +32,9 @@ export function WorkflowEmptyState({
   onSemanticMlEnabledChange,
   onCategoriesChange,
   settingsHint,
+  onUploadPdf,
+  uploadingPdf,
+  pdfUploadError,
 }: Props) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 pb-8 pt-16">
@@ -53,6 +59,9 @@ export function WorkflowEmptyState({
         onSemanticMlEnabledChange={onSemanticMlEnabledChange}
         onCategoriesChange={onCategoriesChange}
         settingsHint={settingsHint}
+        onUploadPdf={onUploadPdf}
+        uploadingPdf={uploadingPdf}
+        pdfUploadError={pdfUploadError}
       />
 
       <div className="mt-6 flex max-w-3xl flex-wrap justify-center gap-2 px-4">

@@ -99,6 +99,46 @@ export async function postJson(url, body, { timeoutMs = 30000 } = {}) {
   }
 }
 
+export async function postForm(url, fileBuffer, { filename = "document.pdf", ...fields } = {}, { timeoutMs = 120000 } = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const form = new FormData();
+    form.append("file", new Blob([fileBuffer]), filename);
+    for (const [key, value] of Object.entries(fields)) {
+      if (value !== undefined && value !== null) form.append(key, String(value));
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      body: form,
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+    const payload = text ? safeJsonParse(text) : null;
+
+    if (!response.ok) {
+      throw new HttpError(
+        response.status >= 500 ? 502 : response.status,
+        "upstream_error",
+        formatUpstreamError(payload, response.status),
+        payload
+      );
+    }
+
+    return payload;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new HttpError(504, "upstream_timeout", "Upstream request timed out");
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 function safeJsonParse(text) {
   try {
     return JSON.parse(text);

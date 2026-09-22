@@ -58,7 +58,11 @@ class LocalRetriever:
                     "metadata": 1,
                     "embedding": 1,
                 },
-            ).limit(limit)
+            )
+            # Prioritize the most recent documents (including user uploads) so they
+            # stay inside the bounded candidate window even when the corpus outgrows it.
+            .sort([("created_at", -1)])
+            .limit(limit)
         )
         if not rows:
             return [], np.empty((0, 0), dtype=np.float32)

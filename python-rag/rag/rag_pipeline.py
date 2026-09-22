@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import sys
+from typing import Any
 
 from loguru import logger
 
@@ -35,6 +36,7 @@ from rag.llm_client import LLMClient
 from rag.output_schema import ApplicableClause, ComplianceOutput
 from rag.prompt_builder import build_compliance_prompt
 from retrieval.retriever import LocalRetriever
+from rules.relevance import detect_relevant_categories, enrich_relevance_from_hits
 from rules.rule_engine import evaluate_rules
 from xai.explainer import explain_decision, extract_features, score_from_features
 
@@ -210,6 +212,11 @@ class RAGPipeline:
         regulator: str | None = None,
         category: str | None = None,
         status: str | None = "active",
+        active_categories: list[str] | None = None,
+        enable_xai: bool = True,
+        enable_semantic_ml: bool = False,
+        calibration_frozen: dict[str, Any] | None = None,
+        chat_id: str | None = None,
     ) -> dict:
         if call_type not in {"general_query", "new_report", "update_report"}:
             raise ValueError("call_type must be one of: general_query, new_report, update_report")
@@ -222,8 +229,15 @@ class RAGPipeline:
         retrieval_query = build_retrieval_query(workflow_text)
         improve = wants_score_improvement(workflow_text)
 
-        # Step 1: deterministic rules on USER text only
-        rule_out = evaluate_rules(rule_text)
+        if not category and active_categories and len(active_categories) == 1:
+            category = active_categories[0]
+
+        # Step 1: deterministic rules on USER text only.
+        # The relevance router narrows the catalog to the domain packs the
+        # current prompt actually touches, so unrelated rules stay silent
+        # instead of re-triggering on every question.
+        relevance = detect_relevant_categories(rule_text, category_hint=category)
+        rule_out = evaluate_rules(rule_text, relevant_categories=relevance["categories"])
 
         # Step 2: retrieval on focused query (better matching)
         hits = self.retriever.search(
@@ -234,6 +248,7 @@ class RAGPipeline:
             status=status or "",
             use_reranker=True,
         )
+        relevance = enrich_relevance_from_hits(relevance, hits)
         hits = annotate_hits(hits, rule_text)
         evidence_scope = build_evidence_scope(rule_text, hits)
 
@@ -376,12 +391,17 @@ class RAGPipeline:
             "retrieval_hits": hits,
             "evidence_scope": evidence_scope,
             "rule_assessments": rule_assessments,
-            "xai": explain_decision(
-                workflow_text=rule_text,
-                rules_out=rule_out,
-                retrieval_hits=hits,
-                final_score=final.compliance_score,
-                final_risk=final.risk_level,
+            "relevance": relevance,
+            "xai": (
+                explain_decision(
+                    workflow_text=rule_text,
+                    rules_out=rule_out,
+                    retrieval_hits=hits,
+                    final_score=final.compliance_score,
+                    final_risk=final.risk_level,
+                )
+                if enable_xai
+                else {}
             ),
             "ml_risk": ml_risk,
         }

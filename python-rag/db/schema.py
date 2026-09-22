@@ -29,6 +29,7 @@ def setup_indexes():
         IndexModel([("chunk_id", ASCENDING)], unique=True),
         IndexModel([("document_id", ASCENDING)]),
         IndexModel([("embedded", ASCENDING)]),  # track embedding status
+        IndexModel([("created_at", DESCENDING)]),  # recent-first candidate scan
         IndexModel([("metadata.regulator", ASCENDING)]),
         IndexModel([("metadata.category", ASCENDING)]),
         IndexModel([("metadata.status", ASCENDING)]),

@@ -231,4 +231,51 @@ export const queryCompliance = async (payload: {
   });
 };
 
+export interface PdfUploadResponse {
+  ok: boolean;
+  filename: string;
+  stored_path?: string;
+  method: "pymupdf" | "pdfplumber" | "ocr" | "ocr_failed" | string;
+  page_count: number;
+  char_count: number;
+  text?: string;
+  warnings?: string[];
+  extraction_status: "success" | "failed";
+  ingest?: {
+    regulation_id: string;
+    chunks_created: number;
+    embedded: number;
+  };
+}
+
+export const uploadApi = {
+  uploadPdf: async (file: File, ingest = false): Promise<PdfUploadResponse> => {
+    const base =
+      process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://127.0.0.1:5000/api/v1";
+    const token = getAuthToken();
+    const form = new FormData();
+    form.append("file", file);
+
+    const res = await fetch(`${base}/rag/upload?ingest=${ingest ? 1 : 0}`, {
+      method: "POST",
+      body: form,
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      let message = "PDF upload failed";
+      try {
+        const err = await res.json();
+        if (err?.error) message = String(err.error);
+        if (err?.detail) message = String(err.detail);
+      } catch {
+        /* not JSON */
+      }
+      throw new Error(message);
+    }
+    return res.json();
+  },
+};
+
 export default api;

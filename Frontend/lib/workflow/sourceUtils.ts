@@ -1,6 +1,6 @@
-export function sourceLabel(source: any): string {  const rel = source?.relative_path || source?.source_file || "";
+export function sourceLabel(source: any): string {  const rel = source?.relative_path || source?.source_file || source?.source || "";
   if (rel) return String(rel).split(/[/\\]/).pop() || rel;
-  return source?.document_id || source?.section || "Regulation";
+  return source?.document_id || source?.title || source?.section || "Regulation";
 }
 
 export function formatSourcesBlock(sources: any[] | undefined): string {

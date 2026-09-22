@@ -84,4 +84,39 @@ AEPS_RULES: list[dict] = [
         "flag": "BC/AePS per-day caps not enforced",
         "recommendation": "Apply RBI/NPCI caps on BC-led AePS transactions.",
     },
+    {
+        "rule_id": "R_AEPS_008_NO_REVERSAL",
+        "name": "AePS Failed-Txn Reversal Gap",
+        "risk_level": "MEDIUM",
+        "categories": _AEPS,
+        "patterns": [
+            r"\baeps\b.*\b(failed|rejected)\b.*\b(no|without)\s+reversal\b",
+            r"\b(no|without)\s+auto\s+reversal\b.*\baeps\b",
+        ],
+        "requires_any": [
+            r"\breversal\b",
+            r"\bend[- ]of[- ]day\s+recon\b",
+            r"\bsettlement\s+mismatch\b.*\bhandling\b",
+        ],
+        "flag": "Failed AePS transactions not auto-reversed",
+        "recommendation": "Auto-reverse debits for failed AePS transactions same day.",
+    },
+    {
+        "rule_id": "R_AEPS_009_NO_TAT_BANK_NEGLIGENCE",
+        "name": "AePS Fraud / Bank Negligence Process",
+        "risk_level": "MEDIUM",
+        "categories": _AEPS,
+        "patterns": [
+            r"\baeps\b.*\b(fraud|negligence|dispute)\b.*\b(no|without)\s+(process|claim|reporting)\b",
+            r"\b(no|without)\s+bank\s+negligence\s+claim\b",
+        ],
+        "requires_any": [
+            r"\bnegligence\s+claim\b",
+            r"\bTAT\b.*\bfraud\b",
+            r"\bipb\b",
+            r"\bdispute\s+redressal\b.*\baeps\b",
+        ],
+        "flag": "AePS fraud/negligence claim process not defined",
+        "recommendation": "Document claim intake, investigation and negligence TAT.",
+    },
 ]

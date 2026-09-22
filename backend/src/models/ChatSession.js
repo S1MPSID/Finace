@@ -11,6 +11,9 @@ const messageSchema = new mongoose.Schema(
     reasoning_steps: { type: [String], default: [] },
     xai: { type: Object, default: {} },
     analysis: { type: Object, default: {} },
+    ml_risk: { type: Object, default: {} },
+    rule_assessments: { type: [Object], default: [] },
+    evidence_scope: { type: Object, default: {} },
   },
   { _id: false }
 );

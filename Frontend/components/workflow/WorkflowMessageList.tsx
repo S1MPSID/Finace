@@ -99,7 +99,13 @@ function SourceList({ sources }: { sources: any[] }) {
     <div className="space-y-1 border-l-2 border-white/10 pl-3">
       <p className="text-[11px] font-medium uppercase tracking-wider text-white/35">Sources</p>
       {sources.map((source, si) => {
-        const relPath = source.relative_path || source.source_file || source.document_id || "";
+        const relPath =
+          source.relative_path ||
+          source.source_file ||
+          source.source ||
+          source.file_path ||
+          source.document_id ||
+          "";
         const docUrl = isPdfSourcePath(relPath) ? resolvePublicDocUrl(relPath) : null;
         const fileName = sourceLabel(source);
 

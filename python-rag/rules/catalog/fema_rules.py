@@ -24,4 +24,35 @@ FEMA_RULES: list[dict] = [
         "flag": "FX exposure management not described",
         "recommendation": "Document FEMA compliance and FX risk controls.",
     },
+    {
+        "rule_id": "R_FEMA_003_OVERSEAS_SPEND",
+        "name": "Overseas Card / Spend Without FEMA Reporting",
+        "risk_level": "MEDIUM",
+        "categories": _FEMA,
+        "patterns": [
+            r"\bforex\s+card\b.*\b(no|without)\s+(fema|reporting)\b",
+            r"\boverseas\s+(card|spend|payment)\b.*\b(no|without)\s+reporting\b",
+        ],
+        "requires_any": [r"\bforex\s+card\b", r"\bintl\s+spend\b.*\breport\b", r"\bfema\s+reporting\b"],
+        "flag": "Overseas spend / forex card without FEMA reporting",
+        "recommendation": "Report international spend and track LRS against limits.",
+    },
+    {
+        "rule_id": "R_FEMA_004_CURRENCY_CONVERSION_GAP",
+        "name": "Currency Conversion / Rates Disclosure",
+        "risk_level": "LOW",
+        "categories": _FEMA,
+        "patterns": [
+            r"\bcross[- ]border\b.*\b(no|without)\s+(rate|conversion)\s+disclosure\b",
+            r"\b(no|without)\s+interbank\s+rate\b",
+        ],
+        "requires_any": [
+            r"\bconversion\s+rate\b",
+            r"\binterbank\s+rate\b",
+            r"\bmarkup\s+disclos\b",
+            r"\bforex\s+rate\b.*\bdisclos\b",
+        ],
+        "flag": "FX conversion rate / spread not disclosed",
+        "recommendation": "Disclose conversion rates and spreads transparently.",
+    },
 ]

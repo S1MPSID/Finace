@@ -26,6 +26,9 @@ export default function WorkflowChatPage() {
       onSemanticMlEnabledChange={chat.setSemanticMlEnabled}
       onCategoriesChange={chat.setSelectedCategories}
       settingsHint={chat.settingsHint}
+      onUploadPdf={chat.handleUploadPdf}
+      uploadingPdf={chat.uploadingPdf}
+      pdfUploadError={chat.pdfUploadError}
     />
   );
 
@@ -58,6 +61,9 @@ export default function WorkflowChatPage() {
           onSemanticMlEnabledChange={chat.setSemanticMlEnabled}
           onCategoriesChange={chat.setSelectedCategories}
           settingsHint={chat.settingsHint}
+          onUploadPdf={chat.handleUploadPdf}
+          uploadingPdf={chat.uploadingPdf}
+          pdfUploadError={chat.pdfUploadError}
         />
       ) : (
         <>

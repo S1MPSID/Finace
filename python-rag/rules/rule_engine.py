@@ -43,12 +43,36 @@ def _rule_is_applicable(rule: dict, text: str) -> bool:
     return _match_any(patterns, text)
 
 
-def evaluate_rules(workflow_text: str) -> dict:
+def _rule_selected(rule: dict, relevant_categories: list[str] | None) -> bool:
+    """Core rules (no categories) always run; domain rules need relevance."""
+    categories = rule.get("categories") or []
+    if not categories:
+        return True
+    if relevant_categories is None:
+        # Backward-compatible default: no relevance filter supplied, evaluate all.
+        return True
+    return bool(set(categories) & set(relevant_categories))
+
+
+def evaluate_rules(
+    workflow_text: str,
+    relevant_categories: list[str] | None = None,
+) -> dict:
     text = workflow_text or ""
     triggered: list[dict] = []
     assessments: list[dict] = []
 
-    for rule in RULES:
+    selected = [rule for rule in RULES if _rule_selected(rule, relevant_categories)]
+    assessed_categories = sorted(
+        {
+            category
+            for rule in selected
+            for category in (rule.get("categories") or [])
+            if category != "GENERAL"
+        }
+    )
+
+    for rule in selected:
         applicable = _rule_is_applicable(rule, text)
         if not applicable:
             continue
@@ -105,4 +129,7 @@ def evaluate_rules(workflow_text: str) -> dict:
         "risk_flags": [r["flag"] for r in triggered],
         "recommendations": [r["recommendation"] for r in triggered],
         "rule_assessments": assessments,
+        "assessed_categories": assessed_categories,
+        "assessed_rule_ids": [rule["rule_id"] for rule in selected],
+        "relevant_categories": list(relevant_categories or []),
     }

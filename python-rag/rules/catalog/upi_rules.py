@@ -173,4 +173,58 @@ UPI_RULES: list[dict] = [
         "flag": "Delegated UPI payments without authorization model",
         "recommendation": "Implement NPCI delegated payment consent flows.",
     },
+    {
+        "rule_id": "R_UPI_013_BATCH_FILE_SECURITY",
+        "name": "UPI Batch / Switch File Security",
+        "risk_level": "MEDIUM",
+        "categories": _UPI,
+        "patterns": [
+            r"\b(no|without)\s+(sign|signature|encryption)\b.*\b(batch|file)\b",
+            r"\bbatch\s+files?\b.*\b(unauth|unsecure|plain)\b",
+            r"\b(no|without)\s+file\s+transfer\s+controls\b",
+        ],
+        "requires_any": [
+            r"\bsign\w*\b.*\b(batch|file)\b",
+            r"\bencrypted\s+(batch|file)\b",
+            r"\bsftp\b",
+            r"\bkey\s+management\b.*\b(switch|batch)\b",
+        ],
+        "flag": "UPI batch / pinpad file integrity controls unclear",
+        "recommendation": "Sign and encrypt switch batch files and rotate keys.",
+    },
+    {
+        "rule_id": "R_UPI_014_CREDIT_PUSH_UNVETTED",
+        "name": "Credit Push / Beneficiary Pre-Validation",
+        "risk_level": "MEDIUM",
+        "categories": _UPI,
+        "patterns": [
+            r"\bcredit[ -]+push\b.*\b(no|without)\s+(validation|verification)\b",
+            r"\bpush\s+payment\b.*\bunvetted\s+account\b",
+            r"\b(no|without)\s+beneficiary\s+verification\b",
+        ],
+        "requires_any": [
+            r"\bbeneficiary\s+(validation|verification)\b",
+            r"\baccount\s+hold\b",
+            r"\bfirst\s+time\s+credit\s+check\b",
+        ],
+        "flag": "Credit-push transactions not pre-validated",
+        "recommendation": "Verify beneficiaries and apply holds for fresh credit-push.",
+    },
+    {
+        "rule_id": "R_UPI_015_AUTO_ALIAS_UNCONSENTED",
+        "name": "Auto-Linked / Auto-Route UPI IDs",
+        "risk_level": "LOW",
+        "categories": _UPI,
+        "patterns": [
+            r"\bauto[ -]link\w*\b.*\b(vpa|account|upi\s+id)\b",
+            r"\b(no|without)\s+consent\b.*\b(link|route)\b.*\bupi\b",
+        ],
+        "requires_any": [
+            r"\bexplicit\s+consent\b.*\b(link|route)\b",
+            r"\bvpa\s+management\b",
+            r"\bdefault\s+debit\s+account\b.*\bchoice\b",
+        ],
+        "flag": "VPA/account auto-linking or routing without customer consent",
+        "recommendation": "Take explicit consent before linking/routing UPI IDs.",
+    },
 ]

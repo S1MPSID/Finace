@@ -78,6 +78,7 @@ async function toChatResponse(result) {
     reasoningSteps: analysis.reasoning_steps || [],
     xai: result?.xai || {},
     ml_risk: result?.ml_risk || {},
+    ml_validation: result?.ml_validation || {},
     evidence_scope: result?.evidence_scope || {},
     rule_assessments: result?.rule_assessments || [],
     analysis,

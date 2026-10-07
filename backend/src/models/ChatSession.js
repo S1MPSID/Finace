@@ -12,6 +12,7 @@ const messageSchema = new mongoose.Schema(
     xai: { type: Object, default: {} },
     analysis: { type: Object, default: {} },
     ml_risk: { type: Object, default: {} },
+    ml_validation: { type: Object, default: {} },
     rule_assessments: { type: [Object], default: [] },
     evidence_scope: { type: Object, default: {} },
   },

@@ -2,6 +2,7 @@ import { Info, ShieldAlert, CheckCircle2, FileText, ExternalLink, ListOrdered } 
 import { motion } from "framer-motion";
 import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
 import { MLRiskPanel } from "@/components/reports/MLRiskPanel";
+import { MLValidationCard } from "@/components/ml-validation/MLValidationCard";
 import { EvidenceScopeNotice } from "@/components/reports/EvidenceScopeNotice";
 import { RuleImpactPanel } from "@/components/reports/RuleImpactPanel";
 import { isPdfSourcePath, resolvePublicDocUrl } from "@/lib/docs/publicDocUrl";
@@ -35,6 +36,8 @@ export function ReportDetails({ report }: { report: any }) {
       <ExplainabilityPanel xai={report.xai} />
 
       <MLRiskPanel mlRisk={report.ml_risk} />
+
+      <MLValidationCard mlValidation={report.ml_validation} />
 
       <EvidenceScopeNotice scope={report.evidence_scope} />
       <RuleImpactPanel assessments={report.rule_assessments} />

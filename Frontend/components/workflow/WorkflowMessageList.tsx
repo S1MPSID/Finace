@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { ExternalLink, ShieldAlert, User as UserIcon } from "lucide-react";
 import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
 import { MLRiskPanel } from "@/components/reports/MLRiskPanel";
+import { MLValidationCard } from "@/components/ml-validation/MLValidationCard";
 import { RuleImpactPanel } from "@/components/reports/RuleImpactPanel";
 import { resolvePublicDocUrl, isPdfSourcePath } from "@/lib/docs/publicDocUrl";
 import { sourceLabel } from "@/lib/workflow/sourceUtils";
@@ -70,6 +71,10 @@ export function WorkflowMessageList({ messages, loading, scrollRef }: Props) {
 
               {m.role === "ai" && m.data?.ml_risk && (
                 <MLRiskPanel mlRisk={m.data.ml_risk} compact />
+              )}
+
+              {m.role === "ai" && m.data?.ml_validation && (
+                <MLValidationCard mlValidation={m.data.ml_validation} compact />
               )}
 
               {m.role === "ai" && m.data?.rule_assessments?.length ? (

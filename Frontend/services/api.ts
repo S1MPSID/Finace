@@ -189,6 +189,7 @@ export interface RagQueryResponse {
   }>;
   xai?: any;
   ml_risk?: any;
+  ml_validation?: any;
   evidence_scope?: {
     workflow_domains?: string[];
     direct_evidence_domains?: string[];
@@ -276,6 +277,25 @@ export const uploadApi = {
     }
     return res.json();
   },
+};
+
+export const mlValidationApi = {
+  dashboard: () => api.get("/ml-validation/dashboard"),
+  cases: (params?: {
+    set?: "robustness" | "human" | "comparison";
+    limit?: number;
+    offset?: number;
+    predict?: boolean;
+  }) =>
+    api.get("/ml-validation/cases", {
+      params: {
+        set: params?.set || "robustness",
+        limit: params?.limit ?? 20,
+        offset: params?.offset ?? 0,
+        predict: params?.predict === false ? "false" : "true",
+      },
+    }),
+  caseDetail: (caseId: string) => api.get(`/ml-validation/cases/${encodeURIComponent(caseId)}`),
 };
 
 export default api;

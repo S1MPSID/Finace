@@ -1,0 +1,279 @@
+{
+  "total": 14320,
+  "issue_count": 5450,
+  "flag_counts": {
+    "low_requirement_grounding_in_scenario": 5450
+  },
+  "exact_duplicate_scenario_groups": 813,
+  "cross_family_near_duplicates_approx": 660,
+  "class_balance": {
+    "status": {
+      "COMPLIANT": 4296,
+      "NON_COMPLIANT": 5728,
+      "PARTIAL": 4296
+    },
+    "risk": {
+      "LOW": 4296,
+      "HIGH": 5728,
+      "MEDIUM": 4296
+    },
+    "difficulty": {
+      "hard": 14320
+    },
+    "scenario_type": {
+      "compliant": 1432,
+      "compliant_with_risk_vocab": 1432,
+      "non_compliant": 1432,
+      "noncompliant_no_trigger_words": 1432,
+      "partial_compliance": 1432,
+      "implicit_violation": 1432,
+      "noisy_long_workflow": 1432,
+      "multi_violation": 1432,
+      "hard_negative": 1432,
+      "edge": 1432
+    }
+  },
+  "issues_sample": [
+    {
+      "case_id": "CASE-c460259b216061ee",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-31cbd684dbea39e7",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-d957d4e99bb6a975",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-21d8af8c13937d0a",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-2d934c2f5cdc01e4",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-4cfbbd04ebf6d580",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-38d1764745051e12",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-db17d607eaf133f6",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-5495669a7d7efede",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-0d0a97003782fdf9",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-c826f3c4822f87b3",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-7ebe1113ecaca704",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-e8bbfc3bedcb7f0f",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-7a19d0735676607b",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-8c8a13ce8b0ff715",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-e5bfdb117ac65968",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-11b42030cb17d2a4",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-851daa679119f400",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-69642abd38ac0e15",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-c094928383846ac1",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-84392e51821c41fc",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-fe494b7d2190fffe",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-91f08c3fbb2b4c7d",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-c6610a9f08254a65",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-c87a2ef3bf182ccb",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-b2f1a12dc9007be0",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-02e3526bb2d67207",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-b77a13a354e656c8",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-f4b28a41cf70b59f",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-1717648627ec1472",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-101bf88a663b64e4",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-4099d6b9ddb9532c",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-4bc036f939d5991d",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-0d5495b6412aed44",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-37a733f735e77f25",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-84689430d8e705b6",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-f3e059fc82ff01df",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-036a6415f8a1b0cf",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-8952a0dc24b2e360",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    },
+    {
+      "case_id": "CASE-1d7e1ffd571a5202",
+      "flags": [
+        "low_requirement_grounding_in_scenario"
+      ]
+    }
+  ],
+  "ok_for_training": 14320
+}

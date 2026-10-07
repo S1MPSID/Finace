@@ -1,0 +1,28 @@
+{
+  "total": 5936,
+  "by_review_status": {
+    "needs_review": 5860,
+    "approved": 76
+  },
+  "by_domain": {
+    "RBI_MD": 2676,
+    "GENERAL": 1153,
+    "CTS": 1131,
+    "FASTAG": 304,
+    "NACH": 177,
+    "NFS": 129,
+    "IMPS": 121,
+    "AEPS": 103,
+    "RUPAY": 66,
+    "KYC": 38,
+    "UPI": 23,
+    "BHIM_AADHAR": 15
+  },
+  "by_regulator": {
+    "NPCI": 2107,
+    "RBI": 3829
+  },
+  "mean_confidence": 0.411,
+  "approved_only": 76,
+  "needs_review": 5860
+}

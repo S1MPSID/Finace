@@ -1,0 +1,192 @@
+{
+  "split": "test",
+  "n": 1152,
+  "model_dir": "C:\\Users\\Siddhant\\OneDrive\\Desktop\\LY PROJECT\\Finace\\Finace\\python-rag\\ml_validation\\data\\models\\validation_compliance_benchmark_v2_20261007",
+  "status": {
+    "accuracy": 0.3333,
+    "macro_f1": 0.2579,
+    "weighted_f1": 0.2587,
+    "per_class": {
+      "COMPLIANT": {
+        "precision": 0.4145,
+        "recall": 0.7366,
+        "f1": 0.5305
+      },
+      "NON_COMPLIANT": {
+        "precision": 0.224,
+        "recall": 0.2657,
+        "f1": 0.2431
+      },
+      "PARTIAL": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "COMPLIANT",
+        "NON_COMPLIANT",
+        "PARTIAL"
+      ],
+      "matrix": [
+        [
+          274,
+          98,
+          0
+        ],
+        [
+          304,
+          110,
+          0
+        ],
+        [
+          83,
+          283,
+          0
+        ]
+      ]
+    },
+    "roc_auc_macro_ovr": 0.3062316835211399,
+    "ece": 0.3064,
+    "classification_report": {
+      "COMPLIANT": {
+        "precision": 0.4145234493192133,
+        "recall": 0.7365591397849462,
+        "f1-score": 0.5304937076476283,
+        "support": 372.0
+      },
+      "NON_COMPLIANT": {
+        "precision": 0.2240325865580448,
+        "recall": 0.26570048309178745,
+        "f1-score": 0.2430939226519337,
+        "support": 414.0
+      },
+      "PARTIAL": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 366.0
+      },
+      "accuracy": 0.3333333333333333,
+      "macro avg": {
+        "precision": 0.21285201195908607,
+        "recall": 0.33408654095891127,
+        "f1-score": 0.2578625434331873,
+        "support": 1152.0
+      },
+      "weighted avg": {
+        "precision": 0.21436824130362664,
+        "recall": 0.3333333333333333,
+        "f1-score": 0.25866713821425197,
+        "support": 1152.0
+      }
+    },
+    "target": "expected_status"
+  },
+  "risk": {
+    "accuracy": 0.3333,
+    "macro_f1": 0.2579,
+    "weighted_f1": 0.2587,
+    "per_class": {
+      "HIGH": {
+        "precision": 0.224,
+        "recall": 0.2657,
+        "f1": 0.2431
+      },
+      "LOW": {
+        "precision": 0.4145,
+        "recall": 0.7366,
+        "f1": 0.5305
+      },
+      "MEDIUM": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "HIGH",
+        "LOW",
+        "MEDIUM"
+      ],
+      "matrix": [
+        [
+          110,
+          304,
+          0
+        ],
+        [
+          98,
+          274,
+          0
+        ],
+        [
+          283,
+          83,
+          0
+        ]
+      ]
+    },
+    "roc_auc_macro_ovr": 0.3062316835211399,
+    "ece": 0.3064,
+    "classification_report": {
+      "HIGH": {
+        "precision": 0.2240325865580448,
+        "recall": 0.26570048309178745,
+        "f1-score": 0.2430939226519337,
+        "support": 414.0
+      },
+      "LOW": {
+        "precision": 0.4145234493192133,
+        "recall": 0.7365591397849462,
+        "f1-score": 0.5304937076476283,
+        "support": 372.0
+      },
+      "MEDIUM": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 366.0
+      },
+      "accuracy": 0.3333333333333333,
+      "macro avg": {
+        "precision": 0.21285201195908607,
+        "recall": 0.33408654095891127,
+        "f1-score": 0.2578625434331873,
+        "support": 1152.0
+      },
+      "weighted avg": {
+        "precision": 0.21436824130362664,
+        "recall": 0.3333333333333333,
+        "f1-score": 0.25866713821425197,
+        "support": 1152.0
+      }
+    },
+    "target": "expected_risk"
+  },
+  "per_domain_status_accuracy": {
+    "AEPS": 0.4333,
+    "BHIM_AADHAR": 0.25,
+    "CTS": 0.3142,
+    "FASTAG": 0.2889,
+    "GENERAL": 0.3889,
+    "IMPS": 0.3889,
+    "KYC": 0.25,
+    "NACH": 0.3095,
+    "NFS": 0.3036,
+    "RBI_MD": 0.3438,
+    "RUPAY": 0.4
+  },
+  "per_difficulty_status_accuracy": {
+    "easy": 0.7395,
+    "hard": 0.1807,
+    "medium": 0.0
+  },
+  "per_risk_status_accuracy": {
+    "HIGH": 0.2657,
+    "LOW": 0.7366,
+    "MEDIUM": 0.0
+  }
+}

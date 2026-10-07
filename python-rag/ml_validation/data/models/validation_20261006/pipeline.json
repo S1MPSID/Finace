@@ -1,0 +1,51 @@
+{
+  "created_at": "2026-10-06T19:39:15.886726+00:00",
+  "feature_names": [
+    "scenario_len_norm",
+    "has_shall_must",
+    "has_negation",
+    "has_kyc",
+    "has_aml",
+    "has_grievance",
+    "has_monitoring",
+    "has_audit",
+    "has_partial_language",
+    "has_out_of_scope",
+    "has_pilot_language",
+    "has_multi_gap",
+    "requirement_token_overlap",
+    "domain_mentioned",
+    "exclamation_density"
+  ],
+  "status_model": "random_forest",
+  "risk_model": "random_forest",
+  "status_model_compare": {
+    "logistic_regression": {
+      "val_accuracy": 0.9851,
+      "val_macro_f1": 0.9853
+    },
+    "random_forest": {
+      "val_accuracy": 0.9974,
+      "val_macro_f1": 0.9973
+    }
+  },
+  "risk_model_compare": {
+    "logistic_regression": {
+      "val_accuracy": 0.9851,
+      "val_macro_f1": 0.9853
+    },
+    "random_forest": {
+      "val_accuracy": 0.9974,
+      "val_macro_f1": 0.9973
+    }
+  },
+  "train_size": 5446,
+  "val_size": 1142,
+  "seed": 20261007,
+  "notes": [
+    "ML predicts compliance status and risk from workflow text features.",
+    "Does not override regulatory documents, rules, RAG evidence, or Gemini.",
+    "Explanations from this model are distinct from Finace surrogate SHAP/LIME."
+  ],
+  "model_dir": "C:\\Users\\Siddhant\\OneDrive\\Desktop\\LY PROJECT\\Finace\\Finace\\python-rag\\ml_validation\\data\\models\\validation_20261006"
+}

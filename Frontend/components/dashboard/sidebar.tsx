@@ -18,6 +18,7 @@ import {
   Search,
   Trash2,
   ShieldCheck,
+  BrainCircuit,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout as logoutAction } from "@/store/slices/authSlice";
@@ -29,6 +30,7 @@ const items = [
   { href: "/dashboard/workflow" as Route, label: "Analyze workflow", icon: MessageSquare },
   { href: "/dashboard/regulations" as Route, label: "Regulations", icon: BookOpen },
   { href: "/dashboard/evaluator" as Route, label: "Reports & review", icon: Scale },
+  { href: "/dashboard/ml-validation" as Route, label: "ML Validation", icon: BrainCircuit },
   { href: "/dashboard/audit" as Route, label: "Proof ledger", icon: ScrollText },
 ];
 
@@ -151,7 +153,8 @@ export function DashboardSidebar({
             (item) =>
               !isEvaluator ||
               item.href === "/dashboard/evaluator" ||
-              item.href === "/dashboard/audit"
+              item.href === "/dashboard/audit" ||
+              item.href === ("/dashboard/ml-validation" as Route)
           )
           .map((item) => {
           const active =

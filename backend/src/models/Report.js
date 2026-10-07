@@ -49,6 +49,10 @@ const reportSchema = new mongoose.Schema(
       type: Object,
       default: {},
     },
+    ml_validation: {
+      type: Object,
+      default: {},
+    },
     evidence_scope: {
       type: Object,
       default: {},

@@ -49,6 +49,7 @@ class QueryResponse(BaseModel):
     retrieval_hits: list[dict[str, Any]]
     xai: dict[str, Any] = Field(default_factory=dict)
     ml_risk: dict[str, Any] = Field(default_factory=dict)
+    ml_validation: dict[str, Any] = Field(default_factory=dict)
     evidence_scope: dict[str, Any] = Field(default_factory=dict)
     rule_assessments: list[dict[str, Any]] = Field(default_factory=list)
 
@@ -92,6 +93,7 @@ class AnalyzeResponse(BaseModel):
     retrieval_hits: list[dict[str, Any]]
     xai: dict[str, Any] = Field(default_factory=dict)
     ml_risk: dict[str, Any] = Field(default_factory=dict)
+    ml_validation: dict[str, Any] = Field(default_factory=dict)
     evidence_scope: dict[str, Any] = Field(default_factory=dict)
     rule_assessments: list[dict[str, Any]] = Field(default_factory=list)
 

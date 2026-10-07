@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { queryCompliance, type RagQueryResponse } from "@/services/api";
 import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
 import { MLRiskPanel } from "@/components/reports/MLRiskPanel";
+import { MLValidationCard } from "@/components/ml-validation/MLValidationCard";
 import { EvidenceScopeNotice } from "@/components/reports/EvidenceScopeNotice";
 import { RuleImpactPanel } from "@/components/reports/RuleImpactPanel";
 
@@ -187,6 +188,12 @@ export function ComplianceQueryPanel() {
       {result?.ml_risk && (
         <motion.div className="xl:col-span-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <MLRiskPanel mlRisk={result.ml_risk} />
+        </motion.div>
+      )}
+
+      {result?.ml_validation && (
+        <motion.div className="xl:col-span-2" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <MLValidationCard mlValidation={result.ml_validation} />
         </motion.div>
       )}
 

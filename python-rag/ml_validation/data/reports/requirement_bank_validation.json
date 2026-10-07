@@ -1,0 +1,114 @@
+{
+  "total": 5936,
+  "by_review_status": {
+    "needs_review": 5860,
+    "approved": 76
+  },
+  "by_domain": {
+    "RBI_MD": 2676,
+    "GENERAL": 1153,
+    "CTS": 1131,
+    "FASTAG": 304,
+    "NACH": 177,
+    "NFS": 129,
+    "IMPS": 121,
+    "AEPS": 103,
+    "RUPAY": 66,
+    "KYC": 38,
+    "UPI": 23,
+    "BHIM_AADHAR": 15
+  },
+  "issue_count": 0,
+  "flag_counts": {},
+  "exact_duplicate_groups": 1110,
+  "exact_duplicate_examples": [
+    [
+      "maker and checkers must have unique credentials to avoid errors which may lead to financial impact",
+      [
+        "REQ-152e03d343834f06",
+        "REQ-6dbc1276179f8a5e"
+      ]
+    ],
+    [
+      "it is also mentioned that the pso and its psps shall provide the customers an access for lodging the disputes and grievances relating to failed transactions",
+      [
+        "REQ-e35c6728249da8af",
+        "REQ-a56062603d72d6c3",
+        "REQ-9ada9b73c82282d0"
+      ]
+    ],
+    [
+      "the details of complaint raised shall be made available to the members in the adjustment report",
+      [
+        "REQ-0459cfc6f1a2c6b4",
+        "REQ-5788c6c96f68284c",
+        "REQ-ffec6ae6cd262528"
+      ]
+    ],
+    [
+      "customer shall have the option of checking the status of the transaction and status of the complaint raised using this crn on npci website",
+      [
+        "REQ-05d21f17eb488eab",
+        "REQ-1e59cbef5a304684"
+      ]
+    ],
+    [
+      "note i members to treat these complaints in the same manner as if it is raised with the member bank itself and ensure timely resolution for the complaint raised ii complaint crn shall be auto closed once the dispute is accepted or deemed ac",
+      [
+        "REQ-5351be1100a08479",
+        "REQ-a2ee6519f433b878"
+      ]
+    ],
+    [
+      "member banks issuer as well as acquirer shall also be able to check the details of complaint raised using the crn",
+      [
+        "REQ-60e88f738a3607b7",
+        "REQ-e7afb17c5ed5370f"
+      ]
+    ],
+    [
+      "three more fields columns are added in the adjustment report for entries pertaining to customer complaints given below for reference a complaint number complaint reference number crn provided to the customer once the complaint is lodged b c",
+      [
+        "REQ-8a23a0fc9a593bc7",
+        "REQ-2fd63f90b676175d"
+      ]
+    ],
+    [
+      "npci shall ensure that the members participants are adhering to pgs and ocs of all products of npci",
+      [
+        "REQ-8112f08db2399ed8",
+        "REQ-0bed7710e58c1cc1",
+        "REQ-1b1160bfc03bae0a",
+        "REQ-5e3a87a9139dc6da",
+        "REQ-3bfde76ac75b0c87",
+        "REQ-1dacd6c4759ce35e"
+      ]
+    ],
+    [
+      "letter may be issued based on the severity of the non compliance advising the members participants to explain why action cannot be taken on such members participants for the non compliance members participants shall provide response within ",
+      [
+        "REQ-356e70f70bb6be23",
+        "REQ-697d3e1a405fa62d",
+        "REQ-27129f877cabf5db",
+        "REQ-0138c45bd84ea706",
+        "REQ-700ba56a1613b5aa",
+        "REQ-5c845a84dcca3828"
+      ]
+    ],
+    [
+      "the period of temporary suspension shall be based on the severity of the non compliarit event e the non compliant member participant shall be provided with suitable time to remedy the non compliant event and it shall be monitored for closur",
+      [
+        "REQ-3756e56e2e294335",
+        "REQ-4522a30fe9624216",
+        "REQ-7ce001276a8d7367",
+        "REQ-efbb7885d65e7150",
+        "REQ-0c7a903719be6976",
+        "REQ-bd34f05df3f3c441"
+      ]
+    ]
+  ],
+  "issues_sample": [],
+  "mongo_chunks_checked": 2773,
+  "ok_for_dataset_generation": 76,
+  "blocked_until_review": 5860
+}

@@ -13,7 +13,9 @@ import {
   MessageSquare,
   ShieldAlert,
   Sparkles,
+  BrainCircuit,
 } from "lucide-react";
+import type { Route } from "next";
 import { RadialBar, RadialBarChart, PolarAngleAxis, ResponsiveContainer } from "recharts";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { fetchReports } from "@/store/slices/reportsSlice";
@@ -281,10 +283,11 @@ export function OverviewPanel() {
               <div className="mt-4 space-y-2">
                 {(
                   [
-                    { href: "/dashboard/workflow" as const, label: "Analyze workflow", icon: MessageSquare },
-                    { href: "/dashboard/regulations" as const, label: "Regulation library", icon: FileText },
-                    { href: "/dashboard/evaluator" as const, label: "Reports & review", icon: ShieldAlert },
-                  ] as const
+                    { href: "/dashboard/workflow" as Route, label: "Analyze workflow", icon: MessageSquare },
+                    { href: "/dashboard/regulations" as Route, label: "Regulation library", icon: FileText },
+                    { href: "/dashboard/evaluator" as Route, label: "Reports & review", icon: ShieldAlert },
+                    { href: "/dashboard/ml-validation" as Route, label: "ML Validation", icon: BrainCircuit },
+                  ]
                 ).map(({ href, label, icon: Icon }) => (
                   <Link
                     key={href}

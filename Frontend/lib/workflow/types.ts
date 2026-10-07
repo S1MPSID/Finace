@@ -8,6 +8,7 @@ export interface WorkflowMessage {
     risk_level?: string;
     xai?: any;
     ml_risk?: any;
+    ml_validation?: any;
     evidence_scope?: any;
     rule_assessments?: any[];
     reasoning_steps?: string[];

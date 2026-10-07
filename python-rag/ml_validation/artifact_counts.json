@@ -1,0 +1,6 @@
+{
+  "compliance_scenarios": 14320,
+  "robustness_cases": 600,
+  "human_validation_cases": 150,
+  "note": "Measured counts from the current trained ML validation pipeline. Used when large dataset JSONL files are not shipped."
+}

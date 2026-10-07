@@ -100,6 +100,52 @@ async def get_health() -> HealthResponse:
     return HealthResponse(**service.health())
 
 
+@app.get("/ml-validation/dashboard")
+async def ml_validation_dashboard() -> dict:
+    """Read-only ML validation overview for the Finace UI (no training side effects)."""
+    try:
+        from ml_validation.dashboard_api import build_dashboard
+
+        return await run_in_threadpool(build_dashboard)
+    except Exception as exc:
+        logger.exception("ML validation dashboard failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/ml-validation/cases")
+async def ml_validation_cases(
+    set: str = Query(default="robustness", pattern="^(robustness|human|comparison)$"),
+    limit: int = Query(default=20, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+    predict: bool = Query(default=True),
+) -> dict:
+    try:
+        from ml_validation.dashboard_api import list_cases
+
+        return await run_in_threadpool(
+            lambda: list_cases(set, limit=limit, offset=offset, predict=predict)
+        )
+    except Exception as exc:
+        logger.exception("ML validation cases failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.get("/ml-validation/cases/{case_id}")
+async def ml_validation_case_detail(case_id: str) -> dict:
+    try:
+        from ml_validation.dashboard_api import get_case_detail
+
+        detail = await run_in_threadpool(lambda: get_case_detail(case_id))
+        if not detail:
+            raise HTTPException(status_code=404, detail="Case not found")
+        return detail
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.exception("ML validation case detail failed")
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
 @app.get("/calibration/current", response_model=CalibrationCurrentResponse)
 async def calibration_current() -> CalibrationCurrentResponse:
     try:

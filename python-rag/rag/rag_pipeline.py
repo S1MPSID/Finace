@@ -385,6 +385,32 @@ class RAGPipeline:
                         "Update includes superseded/legacy references for change comparison."
                     ]
 
+        # Additive ML validation layer (does not override rules/RAG/LLM/score).
+        ml_validation: dict[str, Any] = {"available": False}
+        try:
+            from ml_validation.model.predict import predict_workflow
+
+            cat_hint = ""
+            if active_categories:
+                cat_hint = str(active_categories[0])
+            elif category:
+                cat_hint = str(category)
+            ml_validation = predict_workflow(
+                rule_text,
+                domain=cat_hint,
+                requirement="",
+                include_explanation=True,
+            )
+        except Exception as exc:
+            logger.warning(f"ML validation layer unavailable: {exc}")
+            ml_validation = {
+                "available": False,
+                "notes": [
+                    "ML validation layer error; existing Finace engines unaffected.",
+                    str(exc),
+                ],
+            }
+
         return {
             "analysis": final.model_dump(),
             "rules": rule_out,
@@ -404,6 +430,7 @@ class RAGPipeline:
                 else {}
             ),
             "ml_risk": ml_risk,
+            "ml_validation": ml_validation,
         }
 
 

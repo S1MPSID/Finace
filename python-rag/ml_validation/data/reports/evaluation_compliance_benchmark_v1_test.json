@@ -1,0 +1,192 @@
+{
+  "split": "test",
+  "n": 1152,
+  "model_dir": "C:\\Users\\Siddhant\\OneDrive\\Desktop\\LY PROJECT\\Finace\\Finace\\python-rag\\ml_validation\\data\\models\\validation_20261006",
+  "status": {
+    "accuracy": 0.9974,
+    "macro_f1": 0.9974,
+    "weighted_f1": 0.9974,
+    "per_class": {
+      "COMPLIANT": {
+        "precision": 1.0,
+        "recall": 0.9919,
+        "f1": 0.996
+      },
+      "NON_COMPLIANT": {
+        "precision": 0.9928,
+        "recall": 1.0,
+        "f1": 0.9964
+      },
+      "PARTIAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "COMPLIANT",
+        "NON_COMPLIANT",
+        "PARTIAL"
+      ],
+      "matrix": [
+        [
+          369,
+          3,
+          0
+        ],
+        [
+          0,
+          414,
+          0
+        ],
+        [
+          0,
+          0,
+          366
+        ]
+      ]
+    },
+    "roc_auc_macro_ovr": 0.9998192927463073,
+    "ece": 0.0161,
+    "classification_report": {
+      "COMPLIANT": {
+        "precision": 1.0,
+        "recall": 0.9919354838709677,
+        "f1-score": 0.9959514170040485,
+        "support": 372.0
+      },
+      "NON_COMPLIANT": {
+        "precision": 0.9928057553956835,
+        "recall": 1.0,
+        "f1-score": 0.9963898916967509,
+        "support": 414.0
+      },
+      "PARTIAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 366.0
+      },
+      "accuracy": 0.9973958333333334,
+      "macro avg": {
+        "precision": 0.9976019184652278,
+        "recall": 0.9973118279569894,
+        "f1-score": 0.9974471029002664,
+        "support": 1152.0
+      },
+      "weighted avg": {
+        "precision": 0.9974145683453237,
+        "recall": 0.9973958333333334,
+        "f1-score": 0.9973952624027438,
+        "support": 1152.0
+      }
+    },
+    "target": "expected_status"
+  },
+  "risk": {
+    "accuracy": 0.9974,
+    "macro_f1": 0.9974,
+    "weighted_f1": 0.9974,
+    "per_class": {
+      "HIGH": {
+        "precision": 0.9928,
+        "recall": 1.0,
+        "f1": 0.9964
+      },
+      "LOW": {
+        "precision": 1.0,
+        "recall": 0.9919,
+        "f1": 0.996
+      },
+      "MEDIUM": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "HIGH",
+        "LOW",
+        "MEDIUM"
+      ],
+      "matrix": [
+        [
+          414,
+          0,
+          0
+        ],
+        [
+          3,
+          369,
+          0
+        ],
+        [
+          0,
+          0,
+          366
+        ]
+      ]
+    },
+    "roc_auc_macro_ovr": 0.9998192927463073,
+    "ece": 0.0161,
+    "classification_report": {
+      "HIGH": {
+        "precision": 0.9928057553956835,
+        "recall": 1.0,
+        "f1-score": 0.9963898916967509,
+        "support": 414.0
+      },
+      "LOW": {
+        "precision": 1.0,
+        "recall": 0.9919354838709677,
+        "f1-score": 0.9959514170040485,
+        "support": 372.0
+      },
+      "MEDIUM": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 366.0
+      },
+      "accuracy": 0.9973958333333334,
+      "macro avg": {
+        "precision": 0.9976019184652278,
+        "recall": 0.9973118279569894,
+        "f1-score": 0.9974471029002664,
+        "support": 1152.0
+      },
+      "weighted avg": {
+        "precision": 0.9974145683453237,
+        "recall": 0.9973958333333334,
+        "f1-score": 0.9973952624027438,
+        "support": 1152.0
+      }
+    },
+    "target": "expected_risk"
+  },
+  "per_domain_status_accuracy": {
+    "AEPS": 1.0,
+    "BHIM_AADHAR": 1.0,
+    "CTS": 0.9966,
+    "FASTAG": 1.0,
+    "GENERAL": 1.0,
+    "IMPS": 1.0,
+    "KYC": 1.0,
+    "NACH": 1.0,
+    "NFS": 1.0,
+    "RBI_MD": 0.9963,
+    "RUPAY": 1.0
+  },
+  "per_difficulty_status_accuracy": {
+    "easy": 0.9921,
+    "hard": 1.0,
+    "medium": 1.0
+  },
+  "per_risk_status_accuracy": {
+    "HIGH": 1.0,
+    "LOW": 0.9919,
+    "MEDIUM": 1.0
+  }
+}

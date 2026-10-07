@@ -1,0 +1,190 @@
+{
+  "split": "unseen_wording",
+  "n": 852,
+  "model_dir": "C:\\Users\\Siddhant\\OneDrive\\Desktop\\LY PROJECT\\Finace\\Finace\\python-rag\\ml_validation\\data\\models\\validation_20261006",
+  "status": {
+    "accuracy": 0.9988,
+    "macro_f1": 0.9988,
+    "weighted_f1": 0.9988,
+    "per_class": {
+      "COMPLIANT": {
+        "precision": 1.0,
+        "recall": 0.9965,
+        "f1": 0.9982
+      },
+      "NON_COMPLIANT": {
+        "precision": 0.9965,
+        "recall": 1.0,
+        "f1": 0.9982
+      },
+      "PARTIAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "COMPLIANT",
+        "NON_COMPLIANT",
+        "PARTIAL"
+      ],
+      "matrix": [
+        [
+          283,
+          1,
+          0
+        ],
+        [
+          0,
+          284,
+          0
+        ],
+        [
+          0,
+          0,
+          284
+        ]
+      ]
+    },
+    "roc_auc_macro_ovr": 1.0,
+    "ece": 0.0173,
+    "classification_report": {
+      "COMPLIANT": {
+        "precision": 1.0,
+        "recall": 0.9964788732394366,
+        "f1-score": 0.9982363315696648,
+        "support": 284.0
+      },
+      "NON_COMPLIANT": {
+        "precision": 0.9964912280701754,
+        "recall": 1.0,
+        "f1-score": 0.9982425307557118,
+        "support": 284.0
+      },
+      "PARTIAL": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 284.0
+      },
+      "accuracy": 0.9988262910798122,
+      "macro avg": {
+        "precision": 0.9988304093567252,
+        "recall": 0.9988262910798121,
+        "f1-score": 0.9988262874417922,
+        "support": 852.0
+      },
+      "weighted avg": {
+        "precision": 0.9988304093567251,
+        "recall": 0.9988262910798122,
+        "f1-score": 0.9988262874417921,
+        "support": 852.0
+      }
+    },
+    "target": "expected_status"
+  },
+  "risk": {
+    "accuracy": 0.9988,
+    "macro_f1": 0.9988,
+    "weighted_f1": 0.9988,
+    "per_class": {
+      "HIGH": {
+        "precision": 0.9965,
+        "recall": 1.0,
+        "f1": 0.9982
+      },
+      "LOW": {
+        "precision": 1.0,
+        "recall": 0.9965,
+        "f1": 0.9982
+      },
+      "MEDIUM": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "HIGH",
+        "LOW",
+        "MEDIUM"
+      ],
+      "matrix": [
+        [
+          284,
+          0,
+          0
+        ],
+        [
+          1,
+          283,
+          0
+        ],
+        [
+          0,
+          0,
+          284
+        ]
+      ]
+    },
+    "roc_auc_macro_ovr": 1.0,
+    "ece": 0.0173,
+    "classification_report": {
+      "HIGH": {
+        "precision": 0.9964912280701754,
+        "recall": 1.0,
+        "f1-score": 0.9982425307557118,
+        "support": 284.0
+      },
+      "LOW": {
+        "precision": 1.0,
+        "recall": 0.9964788732394366,
+        "f1-score": 0.9982363315696648,
+        "support": 284.0
+      },
+      "MEDIUM": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 284.0
+      },
+      "accuracy": 0.9988262910798122,
+      "macro avg": {
+        "precision": 0.9988304093567252,
+        "recall": 0.9988262910798121,
+        "f1-score": 0.9988262874417922,
+        "support": 852.0
+      },
+      "weighted avg": {
+        "precision": 0.9988304093567251,
+        "recall": 0.9988262910798122,
+        "f1-score": 0.9988262874417921,
+        "support": 852.0
+      }
+    },
+    "target": "expected_risk"
+  },
+  "per_domain_status_accuracy": {
+    "AEPS": 1.0,
+    "CTS": 1.0,
+    "FASTAG": 1.0,
+    "IMPS": 1.0,
+    "KYC": 0.9167,
+    "NACH": 1.0,
+    "NFS": 1.0,
+    "RBI_MD": 1.0,
+    "RUPAY": 1.0
+  },
+  "per_difficulty_status_accuracy": {
+    "easy": 0.9965,
+    "hard": 1.0,
+    "medium": 1.0
+  },
+  "per_risk_status_accuracy": {
+    "HIGH": 1.0,
+    "LOW": 0.9965,
+    "MEDIUM": 1.0
+  }
+}

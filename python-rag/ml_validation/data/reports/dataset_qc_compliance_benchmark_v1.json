@@ -1,0 +1,36 @@
+{
+  "total": 10024,
+  "issue_count": 0,
+  "flag_counts": {},
+  "exact_duplicate_scenario_groups": 2330,
+  "cross_family_near_duplicates_approx": 605,
+  "class_balance": {
+    "status": {
+      "COMPLIANT": 2864,
+      "NON_COMPLIANT": 2864,
+      "PARTIAL": 2864,
+      "AMBIGUOUS": 1432
+    },
+    "risk": {
+      "LOW": 2864,
+      "HIGH": 2864,
+      "MEDIUM": 4296
+    },
+    "difficulty": {
+      "easy": 2864,
+      "medium": 1432,
+      "hard": 5728
+    },
+    "scenario_type": {
+      "compliant": 1432,
+      "non_compliant": 1432,
+      "partial_compliance": 1432,
+      "edge": 1432,
+      "ambiguous": 1432,
+      "multi_violation": 1432,
+      "hard_negative": 1432
+    }
+  },
+  "issues_sample": [],
+  "ok_for_training": 10024
+}

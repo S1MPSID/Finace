@@ -2,20 +2,15 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { ArrowRight, ChevronRight, Database, Search, Lock } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { ArrowRight, ChevronRight, Sparkles, ShieldCheck } from "lucide-react";
-import {
-  IconRegulationsIndexed,
-  IconClausesEmbedded,
-  IconProofsAnchored,
-} from "@/components/marketing/HeroStatIcons";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.09, duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
@@ -36,130 +31,76 @@ export function Hero() {
   const primaryLabel = isAuthenticated ? "Open Compliance Studio" : "Launch Dashboard";
 
   return (
-    <section className="relative overflow-hidden pb-16 pt-8 sm:pb-20 sm:pt-10">
+    <section className="relative overflow-hidden pb-24 pt-10">
       <div className="shell">
-        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0b1210]/55 px-5 py-14 shadow-glow backdrop-blur-2xl sm:rounded-[2.5rem] sm:px-10 sm:py-16 lg:px-16 lg:py-20">
-          <div className="absolute inset-0 grid-lines opacity-[0.08]" />
+        <div className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#0b0f0f] px-6 py-12 shadow-glow sm:px-10 lg:px-16 lg:py-20">
+          {/* Animated background */}
+          <div className="absolute inset-0 grid-lines opacity-15" />
           <motion.div
-            className="absolute -left-28 top-10 h-[28rem] w-[28rem] rounded-full bg-accent/25 blur-[110px]"
-            animate={{ scale: [1, 1.18, 1], opacity: [0.22, 0.4, 0.22], x: [0, 30, 0] }}
-            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -left-32 top-20 h-96 w-96 rounded-full bg-accent/15 blur-[100px]"
+            animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           />
           <motion.div
-            className="absolute -right-20 top-0 h-80 w-80 rounded-full bg-emerald-400/20 blur-[100px]"
-            animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.38, 0.2] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+            className="absolute right-0 top-0 h-80 w-80 rounded-full bg-emerald/25 blur-[100px]"
+            animate={{ scale: [1, 1.15, 1], opacity: [0.2, 0.35, 0.2] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           />
           <motion.div
-            className="absolute bottom-0 left-1/2 h-56 w-56 -translate-x-1/2 rounded-full bg-teal-300/10 blur-[80px]"
-            animate={{ scale: [1, 1.25, 1] }}
-            transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-0 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-blue-500/10 blur-[80px]"
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           />
 
-          <div className="relative mx-auto flex max-w-4xl flex-col items-center text-center">
-            <motion.div initial="hidden" animate="visible" variants={stagger}>
-              <motion.div
-                variants={fadeUp}
-                custom={0}
-                className="mb-6 flex items-center justify-center gap-2"
-              >
-                <span className="section-label">
-                  <Sparkles className="mr-1.5 inline h-3 w-3 text-accent" />
-                  AI-Powered Compliance Engine
-                </span>
-              </motion.div>
-
-              <motion.p
-                variants={fadeUp}
-                custom={1}
-                className="text-xs font-bold uppercase tracking-[0.35em] text-accent/80"
-              >
-                Finace
-              </motion.p>
-
-              <motion.h1
-                variants={fadeUp}
-                custom={2}
-                className="mt-4 text-4xl font-semibold tracking-tight text-white sm:text-5xl lg:text-6xl lg:leading-[1.08]"
-              >
-                Compliance that{" "}
-                <span className="bg-gradient-to-r from-accent via-emerald-200 to-accent bg-clip-text text-transparent">
-                  explains itself
+          <div className="relative flex flex-col items-center text-center">
+            <motion.div initial="hidden" animate="visible" variants={stagger} className="max-w-4xl">
+              <motion.span variants={fadeUp} custom={0} className="section-label">
+                AI-Powered Compliance Engine
+              </motion.span>
+              <motion.h1 variants={fadeUp} custom={1} className="headline mt-6 !leading-[1.1]">
+                Autonomous compliance intelligence for{" "}
+                <span className="bg-gradient-to-r from-accent via-emerald-300 to-accent bg-clip-text text-transparent">
+                  fintech startups
                 </span>
               </motion.h1>
-
-              <motion.p
-                variants={fadeUp}
-                custom={3}
-                className="mx-auto mt-6 max-w-2xl text-sm leading-7 text-white/60 sm:text-base sm:leading-8"
-              >
-                Map product workflows to RBI, FATF, and NPCI rules with RAG + Gemini. Review SHAP/LIME
-                drivers, then anchor audit-ready proofs on Base Sepolia — one studio, full traceability.
+              <motion.p variants={fadeUp} custom={2} className="subcopy mt-6 mx-auto !text-base !leading-8 max-w-2xl">
+                Analyze workflows against RBI, FATF, and NPCI regulations using RAG + AI reasoning.
+                Get explainable risk reports, generate legal documents, and anchor compliance proofs
+                on the blockchain — all from one dashboard.
               </motion.p>
-
-              <motion.div
-                variants={fadeUp}
-                custom={4}
-                className="mt-9 flex flex-wrap items-center justify-center gap-3"
-              >
+              <motion.div variants={fadeUp} custom={3} className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link
-                  href={primaryHref}
-                  className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-ink transition hover:bg-white hover:shadow-[0_0_32px_rgba(74,222,128,0.4)]"
+                  href="/login"
+                  className="group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-semibold text-ink transition-all hover:bg-white hover:shadow-[0_0_30px_rgba(126,240,207,0.4)]"
                 >
-                  {primaryLabel}
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  Launch Dashboard
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Link>
                 <a
                   href="#how-it-works"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.04] px-6 py-3.5 text-sm font-semibold text-white/90 transition hover:border-accent/35 hover:bg-white/[0.07]"
+                  className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-6 py-3.5 text-sm font-semibold text-white transition hover:border-accent/40 hover:bg-white/[0.08]"
                 >
-                  See the pipeline
-                  <ChevronRight className="h-4 w-4" />
+                  How It Works
+                  <ChevronRight className="w-4 h-4" />
                 </a>
               </motion.div>
 
-              {isAuthenticated && (
-                <motion.p
-                  variants={fadeUp}
-                  custom={5}
-                  className="mt-4 text-xs text-white/40"
-                >
-                  Signed in as <span className="text-accent/80">{user?.name}</span>
-                </motion.p>
-              )}
-
-              <motion.div
-                variants={fadeUp}
-                custom={6}
-                className="mt-14 grid w-full gap-3 sm:grid-cols-3"
-              >
+              <motion.div variants={fadeUp} custom={4} className="mt-14 flex flex-wrap justify-center gap-10 text-sm text-white/60">
                 {[
-                  { stat: "359", label: "Regulations indexed", Icon: IconRegulationsIndexed },
-                  { stat: "10,582", label: "Clauses embedded", Icon: IconClausesEmbedded },
-                  { stat: "Base Sepolia", label: "Proofs anchored", Icon: IconProofsAnchored },
+                  { stat: "359", label: "Regulations indexed", icon: Database },
+                  { stat: "10,582", label: "Compliance clauses", icon: Search },
+                  { stat: "Base Sepolia", label: "Blockchain anchored", icon: Lock },
                 ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="group flex items-center gap-3.5 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3.5 text-left backdrop-blur-sm transition hover:border-accent/25 hover:bg-accent/[0.05]"
-                  >
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-accent/25 bg-gradient-to-br from-accent/15 to-transparent shadow-[0_0_20px_rgba(74,222,128,0.08)] transition group-hover:border-accent/40">
-                      <item.Icon className="h-7 w-7" />
+                  <div key={item.label} className="flex items-center gap-3 text-left">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.06] border border-white/8">
+                      <item.icon className="w-4 h-4 text-accent" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-base font-semibold text-white">{item.stat}</p>
-                      <p className="truncate text-[11px] text-white/45">{item.label}</p>
+                    <div>
+                      <p className="text-lg font-semibold text-white">{item.stat}</p>
+                      <p className="text-xs text-white/50">{item.label}</p>
                     </div>
                   </div>
                 ))}
-              </motion.div>
-
-              <motion.div
-                variants={fadeUp}
-                custom={7}
-                className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/8 bg-black/20 px-3 py-1.5 text-[11px] text-white/40"
-              >
-                <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-                RAG · Rules · XAI · IPFS · Blockchain
               </motion.div>
             </motion.div>
           </div>

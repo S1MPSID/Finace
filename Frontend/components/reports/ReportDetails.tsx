@@ -1,19 +1,10 @@
-import { Info, ShieldAlert, CheckCircle2, FileText, ExternalLink, ListOrdered } from "lucide-react";
+import { Info, ShieldAlert, CheckCircle2, FileText, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
-import { ExplainabilityPanel } from "@/components/reports/ExplainabilityPanel";
-import { MLRiskPanel } from "@/components/reports/MLRiskPanel";
-import { EvidenceScopeNotice } from "@/components/reports/EvidenceScopeNotice";
-import { RuleImpactPanel } from "@/components/reports/RuleImpactPanel";
-import { isPdfSourcePath, resolvePublicDocUrl } from "@/lib/docs/publicDocUrl";
-import { useDocCatalog } from "@/hooks/useDocCatalog";
-import { resolveDocPath } from "@/lib/docs/docCatalog";
-import { toDisplayHtml, toDisplayText } from "@/lib/text/renderRich";
 
 export function ReportDetails({ report }: { report: any }) {
-  const { catalog } = useDocCatalog();
-
   return (
     <>
+      {/* Row 2: Executive Summary */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -26,46 +17,15 @@ export function ReportDetails({ report }: { report: any }) {
           </div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-white/40">Executive Summary</h3>
         </div>
-        <div
-          className="text-white/80 leading-relaxed text-base prose-custom [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-white [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:my-1"
-          dangerouslySetInnerHTML={{ __html: toDisplayHtml(report.explanation || "") }}
+        <div 
+          className="text-white/80 leading-relaxed text-base prose-custom"
+          dangerouslySetInnerHTML={{ __html: report.explanation }} 
         />
       </motion.div>
 
-      <ExplainabilityPanel xai={report.xai} />
-
-      <MLRiskPanel mlRisk={report.ml_risk} />
-
-      <EvidenceScopeNotice scope={report.evidence_scope} />
-      <RuleImpactPanel assessments={report.rule_assessments} />
-
-      {!!report.reasoning_steps?.length && (
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass rounded-[2rem] p-6 border-white/10"
-        >
-          <div className="flex items-center gap-2 mb-5">
-            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
-              <ListOrdered className="w-4 h-4 text-amber-300" />
-            </div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white/40">Decision Path</h3>
-          </div>
-          <ol className="space-y-3">
-            {report.reasoning_steps.map((step: string, i: number) => (
-              <li key={`${step}-${i}`} className="flex gap-3 text-sm text-white/70 leading-6">
-                <span className="shrink-0 w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[11px] text-accent">
-                  {i + 1}
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
-          </ol>
-        </motion.div>
-      )}
-
+      {/* Row 3: Risk Flags + Recommendations side by side */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Risk Flags */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -82,7 +42,7 @@ export function ReportDetails({ report }: { report: any }) {
             {(report.risk_flags || []).map((flag: string, i: number) => (
               <li key={i} className="flex gap-3 items-start text-sm text-white/70 leading-6">
                 <span className="shrink-0 h-1.5 w-1.5 rounded-full bg-rose-400 mt-2.5" />
-                <span>{toDisplayText(flag)}</span>
+                <span>{flag}</span>
               </li>
             ))}
             {(!report.risk_flags || report.risk_flags.length === 0) && (
@@ -91,6 +51,7 @@ export function ReportDetails({ report }: { report: any }) {
           </ul>
         </motion.div>
 
+        {/* Recommendations */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -107,13 +68,14 @@ export function ReportDetails({ report }: { report: any }) {
             {(report.recommendations || []).map((rec: string, i: number) => (
               <li key={i} className="flex gap-3 items-start text-sm text-white/70 leading-6">
                 <span className="shrink-0 h-1.5 w-1.5 rounded-full bg-emerald-400 mt-2.5" />
-                <span>{toDisplayText(rec)}</span>
+                <span>{rec}</span>
               </li>
             ))}
           </ul>
         </motion.div>
       </div>
 
+      {/* Row 4: Legal Citations — full width */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
@@ -128,65 +90,22 @@ export function ReportDetails({ report }: { report: any }) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-6">
           {(report.applicable_clauses || []).map((clause: any, i: number) => {
-            const source = clause.source || clause.document_name || "";
-            const resolvedPath =
-              clause.document_path ||
-              resolveDocPath(clause.document_name || "", catalog) ||
-              (isPdfSourcePath(source) ? source : resolveDocPath(source, catalog));
-            const docUrl = resolvedPath ? resolvePublicDocUrl(resolvedPath) : null;
-            const displayName =
-              clause.document_name ||
-              (resolvedPath ? resolvedPath.split("/").pop()?.replace(/\.pdf$/i, "") : "") ||
-              source ||
-              "Legal Reference";
-
+            const backendBase = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
+            const hasPath = clause.source && (clause.source.endsWith(".pdf") || clause.source.includes("/") || clause.source.includes("\\"));
+            const docUrl = hasPath ? `${backendBase}/docs/${clause.source.replace(/\\/g, "/")}` : null;
             return (
-              <div
-                key={i}
-                className="group relative border-l-2 border-accent/20 pl-5 py-3 transition-all duration-300 hover:border-accent hover:bg-white/[0.03] rounded-r-2xl"
-              >
-                <div className="flex items-center justify-between mb-2 gap-2">
-                  {docUrl ? (
-                    <a
-                      href={docUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1.5 text-[10px] font-mono text-accent/80 hover:text-accent transition-colors underline-offset-2 hover:underline"
-                    >
-                      <FileText className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate max-w-[220px]">{displayName}</span>
-                      <ExternalLink className="w-3 h-3 shrink-0" />
-                    </a>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono text-accent/60">
-                      <FileText className="w-3.5 h-3.5" />
-                      <span className="truncate max-w-[220px]">{displayName}</span>
-                    </div>
-                  )}
-                </div>
-
-                <h4 className="text-white font-semibold text-sm mb-2 group-hover:text-accent transition-colors">
-                  {toDisplayText(clause.title || "Compliance Clause")}
-                </h4>
-
-                {clause.basis && clause.basis !== "direct" && (
-                  <p className="mb-2 text-[10px] uppercase tracking-wider text-yellow-200/65">
-                    Supporting RAG evidence · applicability requires validation
-                  </p>
+              <div key={i} className="border-l-2 border-accent/20 pl-5 py-1">
+                {docUrl ? (
+                  <a href={docUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-mono text-accent mb-1.5 hover:text-white transition group">
+                    <FileText className="w-3 h-3 text-accent/60 group-hover:text-white transition" />
+                    {clause.source.split(/[/\\]/).pop() || clause.source}
+                    <ExternalLink className="w-3 h-3 opacity-0 group-hover:opacity-100 transition" />
+                  </a>
+                ) : (
+                  <p className="text-xs font-mono text-accent mb-1.5">{clause.source || "Regulation"}</p>
                 )}
-
-                <div className="relative overflow-hidden transition-all duration-500 ease-in-out max-h-20 group-hover:max-h-[500px]">
-                  <p className="text-xs text-white/45 leading-relaxed italic group-hover:text-white/70 transition-colors">
-                    &quot;{toDisplayText(clause.text || "")}&quot;
-                  </p>
-                  <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-[#0d1413] to-transparent group-hover:opacity-0 transition-opacity duration-300" />
-                </div>
-                {clause.applicability_note && (
-                  <p className="mt-2 text-[10px] leading-4 text-white/35">
-                    {toDisplayText(clause.applicability_note)}
-                  </p>
-                )}
+                <h4 className="text-white font-semibold text-sm mb-1.5">{clause.title || "Untitled Clause"}</h4>
+                <p className="text-xs text-white/45 leading-relaxed italic line-clamp-3 hover:line-clamp-none transition-all cursor-pointer">&quot;{clause.text}&quot;</p>
               </div>
             );
           })}

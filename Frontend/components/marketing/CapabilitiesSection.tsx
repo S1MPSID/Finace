@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, ShieldCheck, Cpu, FileText, Lock, BrainCircuit } from "lucide-react";
+import { Search, ShieldCheck, Cpu, FileText, Lock, BarChart3 } from "lucide-react";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -20,7 +20,7 @@ const capabilities = [
   {
     icon: Search,
     title: "RAG-Powered Analysis",
-    description: "Regulatory clauses embedded and searchable. Query any compliance topic and get cited, explainable answers.",
+    description: "10,582 regulatory clauses embedded and searchable. Query any compliance topic and get cited, explainable answers.",
   },
   {
     icon: ShieldCheck,
@@ -28,14 +28,14 @@ const capabilities = [
     description: "Submit product workflows and get AI + rule-based risk assessments with severity scoring and clause references.",
   },
   {
-    icon: BrainCircuit,
-    title: "Explainable AI (SHAP + LIME)",
-    description: "See which rules, controls, and retrieved clauses pushed the compliance score up or down — not just the final label.",
-  },
-  {
     icon: Cpu,
     title: "Hybrid Intelligence",
     description: "Deterministic rule engine merged with LLM reasoning. Not a chatbot — a compliance decision engine.",
+  },
+  {
+    icon: FileText,
+    title: "Legal Document Studio",
+    description: "Generate first-draft Privacy Policies and Terms of Service directly from your compliance analysis data.",
   },
   {
     icon: Lock,
@@ -43,9 +43,9 @@ const capabilities = [
     description: "Reports are hashed, uploaded to IPFS via Pinata, and anchored to Base Sepolia for cryptographic traceability.",
   },
   {
-    icon: FileText,
+    icon: BarChart3,
     title: "Evaluator Console",
-    description: "Dedicated review surface for auditors to verify AI findings, inspect XAI drivers, approve reports, and leave remarks.",
+    description: "Dedicated review surface for auditors to verify AI findings, approve reports, and leave structured remarks.",
   },
 ];
 
@@ -84,7 +84,7 @@ export function CapabilitiesSection() {
               key={item.title}
               variants={fadeUp}
               custom={i}
-              className="group glass rounded-[1.8rem] p-6 transition-all hover:border-accent/30 hover:bg-white/[0.06] hover:shadow-[0_0_40px_rgba(74,222,128,0.08)]"
+              className="group glass rounded-[1.8rem] p-6 transition-all hover:border-accent/30 hover:bg-white/[0.06] hover:shadow-[0_0_40px_rgba(126,240,207,0.08)]"
             >
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 border border-accent/20 mb-5 transition-colors group-hover:bg-accent/20">
                 <item.icon className="w-5 h-5 text-accent" />

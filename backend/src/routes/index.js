@@ -8,7 +8,6 @@ import healthRoutes from "./healthRoutes.js";
 import ragRoutes from "./ragRoutes.js";
 import reportRoutes from "./reportRoutes.js";
 import docsRoutes from "./docsRoutes.js";
-import chatHistoryRoutes from "./chatHistoryRoutes.js";
 
 const router = Router();
 

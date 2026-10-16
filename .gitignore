@@ -38,6 +38,7 @@ RBI DOCS/
 **/.next/
 **/coverage/
 python-rag/uv*.exe
+!backend/public/docs/
 
 # VS Code
 .vscode/

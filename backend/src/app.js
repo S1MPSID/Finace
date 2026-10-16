@@ -8,8 +8,6 @@ import { errorHandler, notFoundHandler } from "./middlewares/errorHandler.js";
 import { attachRequestContext } from "./middlewares/requestContext.js";
 import apiRouter from "./routes/index.js";
 
-import { serveDoc } from "./controllers/docsController.js";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -38,8 +36,8 @@ app.use(
 );
 app.use(express.json({ limit: env.jsonBodyLimit }));
 
-// Dynamic document server (supports subdirectories and fuzzy matching)
-app.get(/^\/docs\/(.*)/, serveDoc);
+// Serve RBI DOCS as static files at /docs
+app.use("/docs", express.static(path.join(__dirname, "..", "public", "docs")));
 
 app.get("/health", (_req, res) => {
   res.json({

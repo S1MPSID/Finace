@@ -18,15 +18,7 @@ export function OnChainEvidence({ report }: { report: any }) {
       </div>
       <div className="space-y-4">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1.5">Document Hash (SHA-256)</p>
-          <div className="flex items-center gap-2 bg-black/20 p-2.5 rounded-xl border border-white/5">
-            <p className="text-[10px] font-mono text-white/60 truncate flex-1">
-              {report.document_hash || "Pending signature"}
-            </p>
-          </div>
-        </div>
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1.5">Signed PDF (IPFS)</p>
+          <p className="text-[10px] uppercase tracking-wider text-white/30 mb-1.5">PDF Report (IPFS)</p>
           <div className="flex items-center gap-2 bg-black/20 p-2.5 rounded-xl border border-white/5">
             <p className="text-[10px] font-mono text-white/60 truncate flex-1">{report.ipfs_cid}</p>
             <a 

@@ -1,66 +1,45 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Globe,
-  Database,
-  Cpu,
-  Lock,
-  Layout,
-  Server,
-  BrainCircuit,
-  HardDrive,
-  Link2,
-} from "lucide-react";
+import { Globe, Database, Cpu, Lock } from "lucide-react";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 30 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.07, duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
   }),
 };
 
 const stagger = {
-  visible: { transition: { staggerChildren: 0.07 } },
+  visible: { transition: { staggerChildren: 0.08 } },
 };
 
-const layers = [
-  { label: "Frontend", tech: "Next.js + Tailwind + Framer Motion", icon: Layout },
-  { label: "API Gateway", tech: "Node.js + Express", icon: Server },
-  { label: "RAG Engine", tech: "Python FastAPI + Gemini LLM", icon: BrainCircuit },
-  { label: "Data Layer", tech: "MongoDB Atlas + Vector Embeddings", icon: Database },
-  { label: "Storage", tech: "IPFS via Pinata", icon: HardDrive },
-  { label: "Blockchain", tech: "Solidity on Base Sepolia", icon: Link2 },
-];
-
-const pipeline = [
-  { icon: Globe, label: "359 PDFs", sub: "Ingested" },
-  { icon: Database, label: "10,582 Chunks", sub: "Embedded" },
-  { icon: Cpu, label: "Hybrid RAG", sub: "Rules + LLM" },
-  { icon: Lock, label: "On-Chain", sub: "Proofs" },
-];
-
 export function ArchitectureSection() {
+  const layers = [
+    { label: "Frontend", tech: "Next.js + Tailwind + Framer Motion", color: "bg-blue-500/20 text-blue-300 border-blue-500/30" },
+    { label: "API Gateway", tech: "Node.js + Express", color: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" },
+    { label: "RAG Engine", tech: "Python FastAPI + Groq LLM", color: "bg-purple-500/20 text-purple-300 border-purple-500/30" },
+    { label: "Data Layer", tech: "MongoDB + Vector Embeddings", color: "bg-amber-500/20 text-amber-300 border-amber-500/30" },
+    { label: "Storage", tech: "IPFS via Pinata", color: "bg-cyan-500/20 text-cyan-300 border-cyan-500/30" },
+    { label: "Blockchain", tech: "Solidity on Base Sepolia", color: "bg-rose-500/20 text-rose-300 border-rose-500/30" },
+  ];
+
   return (
-    <section id="architecture" className="relative py-24">
+    <section id="architecture" className="bg-mist py-24 text-slate-900">
       <div className="shell">
         <motion.div
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
           variants={stagger}
-          className="mb-12 max-w-xl"
+          className="mb-12"
         >
-          <motion.span variants={fadeUp} custom={0} className="section-label">
+          <motion.span variants={fadeUp} custom={0} className="section-label border-slate-200 bg-white text-slate-600">
             System Architecture
           </motion.span>
-          <motion.h2
-            variants={fadeUp}
-            custom={1}
-            className="mt-5 text-3xl font-semibold tracking-tight text-white sm:text-4xl"
-          >
+          <motion.h2 variants={fadeUp} custom={1} className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl max-w-lg">
             Production-grade, end-to-end compliance infrastructure.
           </motion.h2>
         </motion.div>
@@ -70,57 +49,44 @@ export function ArchitectureSection() {
           whileInView="visible"
           viewport={{ once: true }}
           variants={stagger}
-          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+          className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
         >
-          {layers.map((layer, i) => {
-            const Icon = layer.icon;
-            return (
-              <motion.div
-                key={layer.label}
-                variants={fadeUp}
-                custom={i}
-                className="group rounded-2xl border border-white/10 bg-white/[0.03] p-5 backdrop-blur-sm transition hover:border-accent/30 hover:bg-accent/[0.06]"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/25 bg-accent/10 text-accent transition group-hover:border-accent/40 group-hover:bg-accent/15">
-                    <Icon className="h-4 w-4" strokeWidth={1.85} />
-                  </div>
-                  <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-medium text-accent/90">
-                    {layer.label}
-                  </span>
-                </div>
-                <p className="mt-4 text-[15px] font-semibold leading-snug text-white/90">{layer.tech}</p>
-              </motion.div>
-            );
-          })}
+          {layers.map((layer, i) => (
+            <motion.div
+              key={layer.label}
+              variants={fadeUp}
+              custom={i}
+              className="rounded-[1.6rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
+            >
+              <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${layer.color}`}>
+                {layer.label}
+              </span>
+              <p className="mt-4 text-lg font-semibold text-slate-900">{layer.tech}</p>
+            </motion.div>
+          ))}
         </motion.div>
 
-        {/* Compact horizontal proof strip */}
         <motion.div
-          initial={{ opacity: 0, y: 16 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="relative mt-10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-5 backdrop-blur-sm sm:px-6"
+          transition={{ delay: 0.3 }}
+          className="mt-12 rounded-[2rem] border border-slate-200 bg-white p-8"
         >
-          <div className="absolute left-[8%] right-[8%] top-1/2 hidden h-px -translate-y-1/2 bg-gradient-to-r from-transparent via-accent/35 to-transparent sm:block" />
-
-          <div className="relative grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-2">
-            {pipeline.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <div key={item.label} className="relative flex flex-col items-center text-center">
-                  <div className="z-10 mb-2 flex h-9 w-9 items-center justify-center rounded-full border border-accent/35 bg-[#0a1210] text-accent shadow-[0_0_16px_rgba(74,222,128,0.12)]">
-                    <Icon className="h-3.5 w-3.5" strokeWidth={2} />
-                  </div>
-                  <p className="text-[13px] font-semibold text-white">{item.label}</p>
-                  <p className="mt-0.5 text-[11px] text-white/45">{item.sub}</p>
-                  {i < pipeline.length - 1 && (
-                    <span className="absolute right-[-6%] top-[18px] hidden text-accent/30 sm:block">›</span>
-                  )}
-                </div>
-              );
-            })}
+          <div className="flex flex-wrap items-center justify-between gap-6">
+            <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
+              {[
+                { icon: Globe, label: "359 PDFs Ingested" },
+                { icon: Database, label: "10,582 Chunks Embedded" },
+                { icon: Cpu, label: "Hybrid RAG + Rules" },
+                { icon: Lock, label: "On-Chain Proofs" },
+              ].map((item) => (
+                <span key={item.label} className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-xs">
+                  <item.icon className="w-3.5 h-3.5" />
+                  {item.label}
+                </span>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>

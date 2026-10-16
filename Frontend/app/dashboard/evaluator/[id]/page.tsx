@@ -4,9 +4,9 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { reportsApi } from "@/services/api";
-import { ShieldAlert, RefreshCw, Fingerprint, ChevronLeft, Loader2, Lock, FileSignature } from "lucide-react";
+import { ShieldAlert, RefreshCw, Fingerprint, ChevronLeft, Loader2, Lock } from "lucide-react";
 import { motion } from "framer-motion";
-import { useAppSelector } from "@/store/hooks";
+import { useAppStore } from "@/store/appStore";
 import { ethers } from "ethers";
 import { COMPLIANCE_ABI, CONTRACT_ADDRESS } from "@/constants/abi";
 
@@ -17,22 +17,23 @@ import { ReportHealthHeader } from "@/components/reports/ReportHealthHeader";
 import { ReportDetails } from "@/components/reports/ReportDetails";
 
 import { ProofGenerationModal } from "@/components/reports/ProofGenerationModal";
-import { CompliancePdfActions } from "@/components/reports/CompliancePdfActions";
-import { EvaluatorAmendmentPanel } from "@/components/reports/EvaluatorAmendmentPanel";
-import { EvaluationAuditTimeline } from "@/components/reports/EvaluationAuditTimeline";
-
-const BASE_SEPOLIA_CHAIN_ID = 84532;
-const BASE_SEPOLIA_CHAIN_HEX = "0x14a34";
 
 export default function ReportReviewPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
-  const user = useAppSelector((s) => s.auth.user);
+  const { user } = useAppStore();
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [remarks, setRemarks] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [actionType, setActionType] = useState<string | null>(null);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalStatus, setModalStatus] = useState<"idle" | "generating" | "success" | "error">("idle");
+  const [modalTxHash, setModalTxHash] = useState<string | null>(null);
+  const [modalIpfsCid, setModalIpfsCid] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,18 +50,6 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
       if (reportData && !reportData.tx_hash && typeof window !== "undefined" && window.ethereum) {
         try {
           const provider = new ethers.BrowserProvider(window.ethereum);
-          const network = await provider.getNetwork();
-          if (Number(network.chainId) !== BASE_SEPOLIA_CHAIN_ID) {
-            setReport(reportData);
-            setRemarks(reportData?.evaluator_remarks || "");
-            return;
-          }
-          const deployedCode = await provider.getCode(CONTRACT_ADDRESS);
-          if (!deployedCode || deployedCode === "0x") {
-            setReport(reportData);
-            setRemarks(reportData?.evaluator_remarks || "");
-            return;
-          }
           const contract = new ethers.Contract(CONTRACT_ADDRESS, COMPLIANCE_ABI, provider);
           const onChainReport = await contract.getReport(id);
           
@@ -73,10 +62,8 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
               status: "verified"
             };
           }
-        } catch (chainErr: any) {
-          if (chainErr?.code !== "BAD_DATA") {
-            console.warn("Blockchain sync check failed:", chainErr);
-          }
+        } catch (chainErr) {
+          console.warn("Blockchain sync check failed:", chainErr);
         }
       }
 
@@ -111,22 +98,6 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
     finally { setSubmitting(false); setActionType(null); }
   };
 
-  const handleSignReport = async () => {
-    setSubmitting(true);
-    setActionType("signing");
-    try {
-      await reportsApi.sign(id, report.workflow_input?.org_name || report.evaluation_metadata?.org_name || "Finace Organization");
-      await fetchReport();
-      alert("Final PDF signed successfully. You can now generate the blockchain proof.");
-    } catch (error: any) {
-      console.error(error);
-      alert(error?.response?.data?.error || error?.message || "Failed to sign the final report.");
-    } finally {
-      setSubmitting(false);
-      setActionType(null);
-    }
-  };
-
   const handleGenerateProof = async (orgName: string) => {
     setModalStatus("generating");
     setModalError(null);
@@ -143,30 +114,6 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
       }
 
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const network = await provider.getNetwork();
-      if (Number(network.chainId) !== BASE_SEPOLIA_CHAIN_ID) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: BASE_SEPOLIA_CHAIN_HEX }],
-          });
-        } catch (switchError: any) {
-          if (switchError?.code === 4902) {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [{
-                chainId: BASE_SEPOLIA_CHAIN_HEX,
-                chainName: "Base Sepolia",
-                nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 },
-                rpcUrls: ["https://sepolia.base.org"],
-                blockExplorerUrls: ["https://sepolia.basescan.org"],
-              }],
-            });
-          } else {
-            throw new Error("Please switch MetaMask to Base Sepolia testnet before anchoring.");
-          }
-        }
-      }
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(contract_address, COMPLIANCE_ABI, signer);
 
@@ -191,10 +138,9 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
 
       setModalStatus("success");
       await fetchReport();
-    } catch (error: any) {
-      const rejected = error?.code === "ACTION_REJECTED" || error?.code === 4001 || error?.info?.error?.code === 4001;
-      if (!rejected) console.error(error);
-      setModalError(rejected ? "Transaction cancelled in MetaMask." : error.reason || error.message || "Blockchain transaction failed.");
+    } catch (error: any) { 
+      console.error(error); 
+      setModalError(error.reason || error.message || "Blockchain transaction failed.");
       setModalStatus("error"); 
     }
   };
@@ -233,40 +179,24 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
             </h2>
           </div>
         </div>
-        <div className="flex gap-2 flex-wrap items-center">
-          <CompliancePdfActions reportId={id} isSigned={report.is_digitally_signed} />
+        <div className="flex gap-2">
           {isFinalized ? (
-            <a
+            <a 
               href={`https://gateway.pinata.cloud/ipfs/${report.ipfs_cid}`}
               target="_blank"
               rel="noreferrer"
               className="flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-5 py-2 text-sm font-bold text-emerald-400 hover:bg-emerald-500/20 transition"
             >
-              <Fingerprint className="w-4 h-4" /> View on IPFS
+              <Lock className="w-4 h-4" /> View PDF Report
             </a>
           ) : (
             <>
               <button onClick={handleUpdate} disabled={submitting} className="flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm text-white/70 hover:bg-white/5 transition disabled:opacity-50">
                 {actionType === "updating" ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />} Improve Analysis (AI)
               </button>
-              {isEvaluator && !report.is_digitally_signed && (
-                <button
-                  onClick={handleSignReport}
-                  disabled={submitting || report.status !== "verified"}
-                  title={report.status === "verified" ? "Finalize and digitally sign this report" : "Approve the report before signing"}
-                  className="flex items-center gap-2 rounded-full bg-accent px-5 py-2 text-sm font-bold text-ink hover:bg-white transition disabled:cursor-not-allowed disabled:opacity-45"
-                >
-                  {actionType === "signing" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSignature className="w-4 h-4" />}
-                  {actionType === "signing" ? "Signing PDF..." : "Finalize & Sign PDF"}
-                </button>
-              )}
-              {isEvaluator && report.is_digitally_signed && (
-                <button
-                  onClick={() => { setIsModalOpen(true); setModalStatus("idle"); }}
-                  disabled={submitting}
-                  className="flex items-center gap-2 rounded-full bg-accent px-5 py-2 text-sm font-bold text-ink hover:bg-white transition disabled:opacity-50"
-                >
-                  <Fingerprint className="w-4 h-4" /> Upload & Anchor On-Chain
+              {report.status === "verified" && (
+                <button onClick={() => { setIsModalOpen(true); setModalStatus("idle"); }} disabled={submitting} className="flex items-center gap-2 rounded-full bg-accent px-5 py-2 text-sm font-bold text-ink hover:bg-white transition disabled:opacity-50">
+                  <Fingerprint className="w-4 h-4" /> Generate Proof
                 </button>
               )}
             </>
@@ -276,19 +206,6 @@ export default function ReportReviewPage({ params }: { params: Promise<{ id: str
 
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-6">
-
-          {user?.role === "evaluator" && !isFinalized && (
-            <EvaluatorAmendmentPanel
-              report={report}
-              onSaved={fetchReport}
-              disabled={submitting}
-            />
-          )}
-
-          <EvaluationAuditTimeline
-            logs={report.evaluation_logs}
-            references={report.evaluator_references}
-          />
 
           {report.status === "pending" && !isFinalized && user?.role === "evaluator" && (
             <ReviewConsole 

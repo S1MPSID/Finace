@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { MetricInfoButton } from "@/components/ui/MetricInfoButton";
 
 export function ReportHealthHeader({ report }: { report: any }) {
   return (
@@ -14,7 +13,6 @@ export function ReportHealthHeader({ report }: { report: any }) {
         <div className="flex items-end gap-2">
           <span className="text-6xl font-bold text-white leading-none">{report.compliance_score ?? "--"}</span>
           <span className="text-white/30 text-xl mb-1">/ 100</span>
-          <MetricInfoButton helpId="compliance_score" className="mb-1" />
         </div>
 
         {/* Divider */}
@@ -55,39 +53,12 @@ export function ReportHealthHeader({ report }: { report: any }) {
             <span className="text-[10px] uppercase tracking-widest text-white/30">Created</span>
             <span className="text-sm text-white/80 font-medium">{new Date(report.created_at).toLocaleDateString()}</span>
           </div>
-          {report.xai?.method && (
-            <>
-              <div className="hidden sm:block w-px h-10 bg-white/10 self-center" />
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-widest text-white/30">XAI</span>
-                <span className="text-sm text-violet-300 font-medium">SHAP + LIME</span>
-              </div>
-            </>
-          )}
           {report.evaluation_metadata?.evaluator_name && (
             <>
               <div className="hidden sm:block w-px h-10 bg-white/10 self-center" />
               <div className="flex flex-col gap-0.5">
                 <span className="text-[10px] uppercase tracking-widest text-white/30">Reviewed by</span>
                 <span className="text-sm text-white/80 font-medium">{report.evaluation_metadata.evaluator_name}</span>
-              </div>
-            </>
-          )}
-          {report.is_digitally_signed && (
-            <>
-              <div className="hidden sm:block w-px h-10 bg-white/10 self-center" />
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-widest text-white/30">PDF</span>
-                <span className="text-sm text-emerald-300 font-medium">Digitally Signed</span>
-              </div>
-            </>
-          )}
-          {report.trust_stats?.trust_index != null && (
-            <>
-              <div className="hidden sm:block w-px h-10 bg-white/10 self-center" />
-              <div className="flex flex-col gap-0.5">
-                <span className="text-[10px] uppercase tracking-widest text-white/30">Trust Index</span>
-                <span className="text-sm text-accent font-medium">{report.trust_stats.trust_index}/100</span>
               </div>
             </>
           )}

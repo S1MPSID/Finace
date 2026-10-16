@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
-import { runGeneralQuery, runRegulationSearch, uploadPdfForOcr } from "../services/ragService.js";
-import { resolveCalibrationFrozenForChat } from "../services/calibrationService.js";
+import { runGeneralQuery, runRegulationSearch } from "../services/ragService.js";
 
 /**
  * Maps the complex RAG result into a clean format for the frontend chat.
@@ -40,32 +39,18 @@ async function toChatResponse(result) {
     }
   }
 
-  const applicableClauses = Array.isArray(analysis.applicable_clauses)
-    ? analysis.applicable_clauses
-    : [];
-  // Keep retrieved evidence visible even when the applicability gate does not
-  // promote a chunk into the legal clause schedule.
-  const citationHits = applicableClauses.length > 0 ? applicableClauses : uniqueHits;
-  const sources = citationHits.map(hit => {
+  const sources = uniqueHits.map(hit => {
     const lookup = docLookup[hit.document_id] || {};
-    const metadata = hit.metadata || {};
     return {
       document_id: hit.document_id || "Regulation",
       section: hit.section || hit.title || "General",
       text: hit.text || hit.content || "",
-      relative_path: lookup.relative_path || hit.relative_path || metadata.relative_path || "",
-      source_file: lookup.source_file || hit.source || metadata.source || "",
-      basis: hit.basis || "direct",
-      applicability_note: hit.applicability_note || "",
+      relative_path: lookup.relative_path || hit.metadata?.relative_path || "",
+      source_file: lookup.source_file || hit.metadata?.source || "",
     };
   });
 
-  const answer = analysis.explanation
-    || analysis.summary
-    || (Array.isArray(analysis.reasoning_steps) && analysis.reasoning_steps.length
-      ? analysis.reasoning_steps.join("\n")
-      : "")
-    || "No detailed explanation provided by AI.";
+  const answer = analysis.explanation || "No detailed explanation provided by AI.";
 
   return {
     ok: true,

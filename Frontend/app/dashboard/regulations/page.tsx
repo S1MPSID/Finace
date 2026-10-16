@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { docsApi } from "@/services/api";
-import { resolvePublicDocUrl } from "@/lib/docs/publicDocUrl";
 import { Search, BookOpen, Database, Loader2, Folder, FileText, ExternalLink, ChevronDown, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -70,6 +69,8 @@ export default function RegulationsPage() {
       };
     }).filter(cat => cat.files.length > 0 || cat.category.toLowerCase().includes(q));
   }, [categories, query]);
+
+  const backendBase = (process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api/v1").replace(/\/api\/v1\/?$/, "");
 
   const formatCategoryName = (name: string) => {
     // Check if the folder name starts with a month abbreviation (Jan, Feb, Mar, etc. or Sept)
@@ -157,22 +158,9 @@ export default function RegulationsPage() {
                   >
                     <div className="border-t border-white/10 pt-4 mt-2 space-y-2">
                       {cat.files.map((file, idx) => {
-                        const docUrl = resolvePublicDocUrl(file.path.replace(/\\/g, "/"));
-                        if (!docUrl) {
-                          return (
-                            <div
-                              key={idx}
-                              className="group flex items-center justify-between p-3 rounded-xl border border-transparent"
-                            >
-                              <div className="flex items-center gap-3 overflow-hidden">
-                                <FileText className="w-4 h-4 text-white/40 shrink-0" />
-                                <span className="text-sm text-white/70 truncate">{file.name}</span>
-                              </div>
-                            </div>
-                          );
-                        }
+                        const docUrl = `${backendBase}/docs/${encodeURI(file.path.replace(/\\/g, "/"))}`;
                         return (
-                          <a
+                          <a 
                             key={idx}
                             href={docUrl}
                             target="_blank"

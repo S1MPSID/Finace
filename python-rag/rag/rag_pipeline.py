@@ -296,7 +296,8 @@ class RAGPipeline:
         # Similarity-only or merchant-sector evidence remains inspectable in
         # retrieval_hits but cannot silently become the legal basis.
         clauses: list[ApplicableClause] = []
-        for hit in select_applicable_hits(hits):
+        for hit in hits:
+            # Use relative_path from metadata so the frontend can link to the PDF
             meta = hit.get("metadata", {})
             source_path = (
                 meta.get("relative_path")
@@ -307,28 +308,10 @@ class RAGPipeline:
             clauses.append(
                 ApplicableClause(
                     title=hit.get("section") or "Clause",
-                text=(hit.get("text") or "")[:1200],
-                source=source_path,
-                basis=(hit.get("evidence_scope") or {}).get("basis", "direct"),
-                applicability_note=(hit.get("evidence_scope") or {}).get("applicability_note", ""),
+                    text=(hit.get("text") or "")[:1200],
+                    source=source_path,
+                )
             )
-            )
-
-        semantic_evaluation = []
-        if enable_semantic_ml:
-            semantic_categories = active_categories or relevance.get("categories") or ["GENERAL"]
-            semantic_evaluation = self.semantic_evaluator.evaluate(
-                workflow_text=workflow_text,
-                active_categories=semantic_categories,
-                retrieval_hits=hits,
-                improvement_requested=improve,
-            )
-
-        # Step 4: ML signal and rule-impact ranking
-        ml_risk = self._ml_risk_block(rule_text, rule_out, hits, top_k)
-        rule_assessments = _add_evidence_status(
-            _rank_rule_assessments(rule_out, ml_risk), evidence_scope
-        )
 
         # Step 5: soft merge using deterministic formula
         vector, spec, _ = extract_features(workflow_text, rule_out, hits)

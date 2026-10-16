@@ -42,8 +42,8 @@ def _extract_json_object(text: str) -> dict:
             if isinstance(parsed, dict):
                 return parsed
         except Exception:
-            continue
-
+            pass
+            
     raise ValueError(f"Could not parse JSON from model response. Raw text: {cleaned[:500]}...")
 
 

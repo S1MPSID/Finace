@@ -104,64 +104,11 @@ export const reportsApi = {
     api.post("/reports/proof", { report_id, org_name }),
   anchor: (report_id: string, tx_hash: string, ipfs_cid?: string, pdf_path?: string) =>
     api.post("/reports/anchor", { report_id, tx_hash, ipfs_cid, pdf_path }),
-  fetchPdf: async (
-    report_id: string,
-    disposition: "inline" | "attachment" = "attachment",
-    options?: { refresh?: boolean }
-  ) => {
-    const base =
-      process.env.NEXT_PUBLIC_API_BASE_URL?.trim() || "http://127.0.0.1:5000/api/v1";
-    const token = getAuthToken();
-    const refresh = options?.refresh ? "&refresh=1" : "";
-    const res = await fetch(
-      `${base}/reports/${report_id}/pdf?disposition=${encodeURIComponent(disposition)}${refresh}`,
-      { headers: token ? { Authorization: `Bearer ${token}` } : {}, cache: "no-store" }
-    );
-    if (!res.ok) {
-      let message = "Failed to load PDF";
-      try {
-        const err = await res.json();
-        if (err?.error) message = String(err.error);
-      } catch {
-        /* not JSON */
-      }
-      throw new Error(message);
-    }
-    return res.blob();
-  },
-  downloadPdf: (report_id: string) => reportsApi.fetchPdf(report_id, "attachment"),
-  regeneratePdf: (report_id: string) =>
-    reportsApi.fetchPdf(report_id, "inline", { refresh: true }),
-};
-
-export const chatHistoryApi = {
-  list: () => api.get("/chats"),
-  get: (id: string) => api.get(`/chats/${id}`),
-  create: (payload: {
-    title?: string;
-    messages?: any[];
-    chat_type?: string;
-    selected_categories?: string[];
-    shap_enabled?: boolean;
-    semantic_ml_enabled?: boolean;
-  }) => api.post("/chats", payload),
-  save: (
-    id: string,
-    payload: {
-      title?: string;
-      messages?: any[];
-      chat_type?: string;
-      selected_categories?: string[];
-      shap_enabled?: boolean;
-      semantic_ml_enabled?: boolean;
-    }
-  ) => api.put(`/chats/${id}`, payload),
-  remove: (id: string) => api.delete(`/chats/${id}`),
 };
 
 export const docsApi = {
   getTree: () => api.get("/docs/tree"),
-  generate: (payload: any) => api.post("/docs/generate", payload),
+  generate: (payload: any) => api.post("/docs/generate", payload), // Note: Mock endpoint until implemented on backend
 };
 
 export const regulationsApi = {
